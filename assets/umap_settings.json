@@ -1,0 +1,143 @@
+{
+ 
+    "settings":[
+        {
+            "section": "UMAP",
+            "mode": "default",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "setting_name":"[UMAP] N Neighbors",
+            "hint": "The number of neighbors considered in UMAP",
+            "type": "int",
+            "value": "15"
+        },
+        
+        {
+            "section": "UMAP",
+            "mode": "default",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "setting_name":"[UMAP] Min Dist",
+            "hint": "The minimum distance between points in the UMAP embedding",
+            "type": "double",
+            "value": "0.1"
+        },
+        {
+            "section": "UMAP",
+            "mode":"default",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "setting_name":"[UMAP] Metric",
+            "hint": "The distance metric used in UMAP training",
+            "type": "ListSingle",
+            "value": "euclidean",
+            "options": [
+                "euclidean",
+                "cosine",
+                "correlation",
+                "braycurtis",
+                "canberra"
+            ]
+        },
+        {
+            "section": "Preproc.",
+            "type": "boolean",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "mode": "advanced",
+            "setting_name":"[DATA PREP] Combine Multiple Tubes",
+            "hint": "Determines if multiple tubes of data are combined during preprocessing.",
+            "value": "true"
+        },
+        {
+            "section": "UMAP",
+            "mode":"default",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "setting_name":"[DATA PREP] Detector List",
+            "hint": "Defines signals from which detectors are used for model training",
+            "type": "ListMultiple",
+            "value": "fsgmi,bsgmi,dgmi,bfgmi",
+            "options": [
+                "fsgmi",
+                "bsgmi",
+                "dgmi",
+                "bfgmi",
+                "fsc",
+                "bsc",
+                "flgmi"
+            ]
+        },
+        {
+            "section": "UMAP",
+            "mode": "advanced",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "setting_name":"[PREPROC] Seed",
+            "hint": "Random seed used for processing.",
+            "type": "int",
+            "value": "42"
+        },
+        {
+            "section": "UMAP",
+            "mode": "advanced",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "setting_name":"[UMAP] N Components UMAP",
+            "hint": "The number of dimensions in the UMAP output",
+            "type": "int",
+            "value": "2"
+        },
+        {
+            "section": "Preproc.",
+            "type": "boolean",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "mode": "advanced",
+            "setting_name":"[DATA PREP] Background correction",
+            "hint": "Determines if signals from different tubes are normalized or not.",
+            "value": "false"
+        },
+        {
+            "section": "Preproc.",
+            "type": "int",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "mode": "advanced",
+            "setting_name":"[DATA PREP] Max N Events",
+            "hint": "Limits the maximum number of events for training and test combined.",
+            "value": "-1"
+        },
+        {
+            "section": "Preproc.",
+            "type": "string",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "mode": "advanced",
+            "setting_name":"[DATA PREP] Train N Per Gate",
+            "hint": "Number of events in each gate for training. (e.g. 5000, 1000, 1000, etc)",
+            "value": ""
+        },
+        {
+            "section": "Preproc.",
+            "type": "boolean",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "mode": "advanced",
+            "setting_name":"[DATA PREP] Train Equal Undersampling",
+            "hint": "Determines whether the same number of events from each gate is used for UMAP training.",
+            "value": "false"
+        },
+        {
+            "section": "Preproc.",
+            "type": "double",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "mode": "advanced",
+            "setting_name":"[DATA PREP] N Components PCA",
+            "hint": "Specifies how many components from PCA to retain as a preprocessing of data for UMAP.",
+            "value": "0.95"
+        }
+
+    ]
+}

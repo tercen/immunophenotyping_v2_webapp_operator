@@ -1,0 +1,21 @@
+{
+    "name": "WebApp Template",
+    "description": "",
+    "isWebApp": true,
+    "isViewOnly": false,
+    "entryType": "app",
+    "tags": [
+      "webapp"
+    ],
+    "authors": [
+      "tercen"
+    ],
+    "urls": [
+      "https://github.com/tercen/webapp_template"
+    ],
+    "serve": "build/web",
+    "properties": [
+  
+    ],
+    "auth": ["basic"]
+  }

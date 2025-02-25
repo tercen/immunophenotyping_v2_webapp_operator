@@ -1,0 +1,171 @@
+{
+    "ml":[
+        {
+            "shortName":"prepTable",
+            "stepName":"Prep table",
+            "stepId":"ea37e940-2708-4fa4-a81d-d67079d53d68"
+        },
+        {
+            "shortName":"train",
+            "stepName":"Train SVM/LGBM",
+            "stepId":"c9cfa067-a21d-48c7-847b-4e62355c1fbf"
+        }
+    ],
+    "applyMl":[
+        {
+            "shortName":"prepTable",
+            "stepName":"Prep table",
+            "stepId":"0396dda7-fae2-4ffd-865b-4cee6a25cb06"
+        },
+        {
+            "shortName":"model",
+            "stepName":"SVM Model",
+            "stepId":"5f3292f7-55a4-4dd8-9717-1ac4d48c5d76"
+        },
+        {
+            "shortName":"predict",
+            "stepName":"Predict left step",
+            "stepId":"04571c38-4d03-4c65-b437-ac878fffd825"
+        }
+    ],
+    "umap":[
+        {
+            "shortName":"prepTable",
+            "stepName":"Prep table",
+            "stepId":"ea37e940-2708-4fa4-a81d-d67079d53d68"
+        },
+        {
+            "shortName":"umap",
+            "stepName":"Train UMAP",
+            "stepId":"7a4a03d1-c1e7-4026-a6e9-17c0c354107b"
+        },
+        {
+            "shortName":"bin",
+            "stepName":"Bin",
+            "stepId":"27c2bdc2-6ffd-40f4-b040-910ee6388689"
+        },
+        {
+            "shortName":"chooseExpr",
+            "stepName":"Choose expression values",
+            "stepId":"acc1b7de-40d0-47a0-8d29-48d872976cc1"
+        },
+        {
+            "shortName":"gatesGather",
+            "stepName":"Choose gates for visualization",
+            "stepId":"f8959386-3892-484e-b196-3a90040041dc"
+        },
+        
+        {
+            "shortName":"gates",
+            "stepName":"Plot UMAP with Gates",
+            "stepId":"e4d01a0e-f4e4-47f0-a438-f2cc0bb2d339"
+        },
+        {
+            "shortName":"gates overlaid",
+            "stepName":"Plot UMAP with Gates overlaid",
+            "stepId":"65255c5f-234b-4563-a753-fbaf091229c8"
+        },
+        {
+            "shortName":"density",
+            "stepName":"Plot UMap with density",
+            "stepId":"c9cc1452-9815-4d95-8df9-fbadbdb165e6"
+        },
+        {
+            "shortName":"density heatmaps",
+            "stepName":"Plot Density Ratio heatmaps",
+            "stepId":"0be87160-3730-4577-9d96-db59b5b507f4"
+        },
+        {
+            "shortName":"expr fsc_bsc",
+            "stepName":"Plot UMAP with expr values (fsc&bsc)",
+            "stepId":"b27348a8-e948-4449-ba89-c81c74ab7def"
+        },
+        {
+            "shortName":"expr fluorescence",
+            "stepName":"Plot UMAP with expr values (fluorescence)",
+            "stepId":"141800b0-b8d3-44b2-b9cb-61feba5ccc11"
+        }
+    ],
+    "applyUmap":[
+        {
+            "shortName":"prepTable",
+            "stepName":"Prep table",
+            "stepId":"ea37e940-2708-4fa4-a81d-d67079d53d68"
+        },
+        {
+            "shortName":"modelTable",
+            "stepName":"Model table",
+            "stepId":"9bbc6472-95de-4bde-b459-9e169e177c07"
+        },
+        {
+            "shortName":"umap",
+            "stepName":"Train UMAP",
+            "stepId":"6cc9ef44-5bb9-491a-a48d-b4ac775e448d"
+        },
+        {
+            "shortName":"bin",
+            "stepName":"Bin",
+            "stepId":"27c2bdc2-6ffd-40f4-b040-910ee6388689"
+        },
+        {
+            "shortName":"chooseExpr",
+            "stepName":"Choose expression values",
+            "stepId":"acc1b7de-40d0-47a0-8d29-48d872976cc1"
+        },
+        {
+            "shortName":"gatesGather",
+            "stepName":"Choose gates for visualization",
+            "stepId":"f8959386-3892-484e-b196-3a90040041dc"
+        },
+        
+        {
+            "shortName":"gates",
+            "stepName":"Plot UMAP with Gates",
+            "stepId":"e4d01a0e-f4e4-47f0-a438-f2cc0bb2d339"
+        },
+        {
+            "shortName":"gates overlaid",
+            "stepName":"Plot UMAP with Gates overlaid",
+            "stepId":"65255c5f-234b-4563-a753-fbaf091229c8"
+        },
+        {
+            "shortName":"density",
+            "stepName":"Plot UMap with density",
+            "stepId":"c9cc1452-9815-4d95-8df9-fbadbdb165e6"
+        },
+        {
+            "shortName":"density heatmaps",
+            "stepName":"Plot Density Ratio heatmaps",
+            "stepId":"0be87160-3730-4577-9d96-db59b5b507f4"
+        },
+        {
+            "shortName":"expr fsc_bsc",
+            "stepName":"Plot UMAP with expr values (fsc&bsc)",
+            "stepId":"b27348a8-e948-4449-ba89-c81c74ab7def"
+        },
+        {
+            "shortName":"expr fluorescence",
+            "stepName":"Plot UMAP with expr values (fluorescence)",
+            "stepId":"141800b0-b8d3-44b2-b9cb-61feba5ccc11"
+        }
+    ],
+    "dataPrep":[
+        {
+            "shortName":"jexpTable",
+            "stepName":"Select Jexp",
+            "stepId":"0396dda7-fae2-4ffd-865b-4cee6a25cb06"
+        },
+        {
+            "shortName":"jwksTable",
+            "stepName":"Select Gates Worksheet",
+            "stepId":"9f972c41-208b-491a-b583-77e1538478d2"
+        },
+        {
+            "shortName":"prepData",
+            "stepName":"Prepare Data",
+            "stepId":"db85654a-461b-4548-b094-5f3adbcd919f"
+        }
+
+        
+    ]
+}
