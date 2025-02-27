@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:webapp_components/screens/screen_base.dart';
 import 'package:webapp_model/webapp_data_base.dart';
-import 'package:webapp_template/webapp_data.dart';
+import 'package:immunophenotyping_webapp/webapp_data.dart';
 import 'package:webapp_ui_commons/mixin/progress_log.dart';
 
 

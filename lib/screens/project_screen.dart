@@ -6,26 +6,28 @@ import 'package:flutter/material.dart';
 import 'package:webapp_components/abstract/single_value_component.dart';
 import 'package:webapp_components/action_components/button_component.dart';
 import 'package:webapp_components/components/input_text_component.dart';
+import 'package:webapp_components/components/upload_multi_file_component.dart';
 import 'package:webapp_components/components/select_from_list.dart';
 import 'package:webapp_components/screens/screen_base.dart';
 import 'package:webapp_model/id_element.dart';
 import 'package:webapp_model/webapp_data_base.dart';
-import 'package:webapp_template/webapp_data.dart';
+import 'package:immunophenotyping_webapp/screens/components/upload_file_team_component.dart';
+import 'package:immunophenotyping_webapp/webapp_data.dart';
 import 'package:webapp_ui_commons/mixin/progress_log.dart';
 
-class ProjectScreen extends StatefulWidget {
+class UploadScreen extends StatefulWidget {
   final WebAppData modelLayer;
-  const ProjectScreen(this.modelLayer, {super.key});
+  const UploadScreen(this.modelLayer, {super.key});
 
   @override
-  State<ProjectScreen> createState() => _ProjectScreenState();
+  State<UploadScreen> createState() => _UploadScreenState();
 }
 
-class _ProjectScreenState extends State<ProjectScreen>
+class _UploadScreenState extends State<UploadScreen>
     with ScreenBase, ProgressDialog {
   @override
   String getScreenId() {
-    return "ProjectScreen";
+    return "UploadScreen";
   }
 
   @override
@@ -48,21 +50,35 @@ class _ProjectScreenState extends State<ProjectScreen>
     var projectInputComponent =
         InputTextComponent("project", getScreenId(), "Project Name");
     projectInputComponent.setData(project.label);
-    // projectInputComponent.onChange(checkRun);
     projectInputComponent.onChange(refresh);
 
     var selectTeamComponent = SelectFromListComponent(
         "team", getScreenId(), "Select Team",
         user: widget.modelLayer.app.teamname);
 
+    var fcsComponent = UploadFileTeamComponent("uploadFcs", getScreenId(), 
+            "FCS File", widget.modelLayer.app.projectId, "", getFileOwner,
+             maxHeight: 150, maxWidth: 200, allowedMime: ["application/zip", "application/vnd.isac.fcs"], showUploadButton: false);
+      
+    var annotationComponent = UploadFileTeamComponent("uploadAnnotation", getScreenId(), 
+            "Marker Annotation File", widget.modelLayer.app.projectId, "", getFileOwner,
+             maxHeight: 150, maxWidth: 200, allowedMime: ["text/csv"], showUploadButton: false);
+
     addComponent("default", projectInputComponent);
     addComponent("default", selectTeamComponent);
+    addHorizontalBar("default");
+    addComponent("default", fcsComponent);
+    addComponent("default", annotationComponent);
 
     var createProjectBtn = ButtonActionComponent(
         "createProject", "Run Analysis", _doCreateProject,
         blocking: false, parents: [projectInputComponent, selectTeamComponent]);
     addActionComponent(createProjectBtn);
     initScreen(widget.modelLayer as WebAppDataBase);
+  }
+
+  String getFileOwner(){
+    return widget.modelLayer.app.teamname;
   }
 
   Future<void> _doCreateProject() async {
@@ -79,6 +95,13 @@ class _ProjectScreenState extends State<ProjectScreen>
 
     await widget.modelLayer
         .createOrLoadProject(IdElement("", projectName), selectedTeam);
+
+    log("Uploading Files", dialogTitle: "Create Project");
+    var upFcsComp = getComponent("uploadFcs") as UploadFileTeamComponent;
+    await upFcsComp.doUpload(context);
+    
+    var upAnnotComp = getComponent("uploadAnnotation") as UploadFileTeamComponent;
+    await upAnnotComp.doUpload(context);
     closeLog();
   }
 

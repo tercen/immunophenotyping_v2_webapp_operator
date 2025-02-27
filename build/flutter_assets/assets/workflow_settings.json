@@ -1,0 +1,74 @@
+{
+ 
+    "settings":[
+        {
+            "section": "PreProcess",
+            "mode":"default",
+            "step_name": "Downsampling",
+            "step_id": "",
+            "setting_name":"Downsampling",
+            "hint": "",
+            "type": "ListSingle",
+            "value": "100%",
+            "options": [
+                "10%",
+                "25%",
+                "50%",
+                "75%",
+                "100%"
+            ]
+        },
+        {
+            "section": "Clustering",
+            "mode":"default",
+            "step_name": "Phenograph",
+            "step_id": "",
+            "setting_name":"Phenograph",
+            "hint": "",
+            "type": "ListSingle",
+            "value": "OptA",
+            "options": [
+                "OptA",
+                "OptB"
+            ]
+        },
+        {
+            "section": "UMAP",
+            "mode": "default",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "setting_name":"[UMAP] N Neighbors",
+            "hint": "The number of neighbors considered in UMAP",
+            "type": "int",
+            "value": "15"
+        },
+        
+        {
+            "section": "UMAP",
+            "mode": "default",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "setting_name":"[UMAP] Min Dist",
+            "hint": "The minimum distance between points in the UMAP embedding",
+            "type": "double",
+            "value": "0.1"
+        },
+        {
+            "section": "UMAP",
+            "mode":"default",
+            "step_name": "UMAP",
+            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
+            "setting_name":"[UMAP] Metric",
+            "hint": "The distance metric used in UMAP training",
+            "type": "ListSingle",
+            "value": "euclidean",
+            "options": [
+                "euclidean",
+                "cosine",
+                "correlation",
+                "braycurtis",
+                "canberra"
+            ]
+        }
+    ]
+}

@@ -1,10 +1,10 @@
 {
     "repos":[
         {
-            "iid":"umap_workflow",
-            "name":"UMAP Workflow",
-            "url":"https://github.com/tercen/webapp_tutorial_workflow",
-            "version":"0.0.4"
+            "iid":"immuno",
+            "name":"Immunophenotyping Workflow",
+            "url":"https://github.com/tercen/immunophenotyping_template",
+            "version":"2.1.0"
         }
     ]
 }

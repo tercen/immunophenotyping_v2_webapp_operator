@@ -1,16 +1,17 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:webapp_template/globals.dart' as globals;
+import 'package:immunophenotyping_webapp/globals.dart' as globals;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:json_string/json_string.dart';
 
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webapp_template/screens/project_screen.dart';
-import 'package:webapp_template/webapp.dart';
-import 'package:webapp_template/webapp_data.dart';
+import 'package:immunophenotyping_webapp/screens/project_screen.dart';
+import 'package:immunophenotyping_webapp/screens/settings_screen.dart';
+import 'package:immunophenotyping_webapp/webapp.dart';
+import 'package:immunophenotyping_webapp/webapp_data.dart';
 import 'package:webapp_ui_commons/mixin/progress_log.dart';
 import 'package:webapp_ui_commons/styles/styles.dart';
 
@@ -103,9 +104,9 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
       log("Initializing File Structure",
           dialogTitle: "WebApp");
 
-      // var workflowSettingsFiles = [
-      //   "assets/umap_settings.json"
-      // ];
+      var workflowSettingsFiles = [
+        "assets/workflow_settings.json"
+      ];
 
       
       var img = await rootBundle.load("assets/img/logo.png");
@@ -114,7 +115,8 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
             height: 100);
 
       // BASIC Initialization
-      await appData.init(app.projectId, app.projectName, app.username);
+      await appData.init(app.projectId, app.projectName, app.username,
+          settingFiles: workflowSettingsFiles);
 
       //OR Advanced initialization with configuration files
       // await appData.init(app.projectId, app.projectName, app.username,
@@ -123,7 +125,10 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
       //     settingFiles: workflowSettingsFiles);
 
       app.addNavigationPage(
-          "Project", ProjectScreen(appData, key: app.getKey("Project")));
+          "Upload Data", UploadScreen(appData, key: app.getKey("Upload")));
+      
+      app.addNavigationPage(
+          "Configuration", SettingsScreen(appData, key: app.getKey("Configuration")));
 
 
 

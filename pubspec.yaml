@@ -1,5 +1,5 @@
-name: webapp_template
-description: "A new Flutter project."
+name: immunophenotyping_webapp
+description: "."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -64,8 +64,9 @@ flutter:
   assets:
     - assets/img/logo.png
     - assets/img/wait.webp
-    #- assets/repos.json
-    #- assets/umap_settings.json
+    - assets/img/ppt_icon.jpeg
+    - assets/repos.json
+    - assets/workflow_settings.json
     #- assets/workflow_steps.json
 
   fonts:
