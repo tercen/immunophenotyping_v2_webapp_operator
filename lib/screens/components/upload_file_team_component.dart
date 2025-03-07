@@ -18,12 +18,16 @@ class UploadFile {
 }
 
 class UploadFileTeamComponent extends UploadFileComponent {
-  final String Function() fileOwnerCallback;
+  late final String Function() fileOwnerCallback;
+  late final String Function() projectIdCallback;
 
-  UploadFileTeamComponent(super.id, super.groupId, super.componentLabel, super.projectId, super.fileOwner, this.fileOwnerCallback, 
+  UploadFileTeamComponent(super.id, super.groupId, super.componentLabel, super.projectId, super.fileOwner,  
     {super.folderId = "", super.maxHeight = 400, super.maxWidth, super.allowedMime, super.showUploadButton = true});
 
-
+  void setProjectOwnerCallback(String Function() projectIdCallback, String Function() ownerCallback){
+    this.projectIdCallback = projectIdCallback;
+    fileOwnerCallback = ownerCallback;
+  }
 
   @override
   Future<void> doUpload(BuildContext context) async{
@@ -31,8 +35,7 @@ class UploadFileTeamComponent extends UploadFileComponent {
       openDialog(context);
       log("File upload in progress. Please wait.", dialogTitle: "File Uploading");
     }
-    
-    
+
     var fileService = FileDataService();
 
     for( int i = 0; i < htmlFileList.length; i++ ){
@@ -42,8 +45,13 @@ class UploadFileTeamComponent extends UploadFileComponent {
       if( showUploadButton ){
         log("Uploading ${file.name}", dialogTitle: "File Uploading");
       }
+
+
+      
       var bytes = await dvController.getFileData(file);
-      var fileId = await fileService.uploadFile(file.name, projectId, fileOwnerCallback(), bytes, folderId: folderId);
+      
+      var fileId = await fileService.uploadFile(file.name, projectIdCallback(), fileOwnerCallback(), bytes, folderId: folderId);
+      print("Uplaoded file id was: $fileId");
       uploadedFiles.add(IdElement(fileId, file.name));
     }
 
@@ -54,10 +62,11 @@ class UploadFileTeamComponent extends UploadFileComponent {
         log("Uploading ${file.name}", dialogTitle: "File Uploading");
       }
 
-      var fileId = await fileService.uploadFile(file.name, projectId, fileOwnerCallback(), bytes, folderId: folderId);
+      var fileId = await fileService.uploadFile(file.name, projectIdCallback(), fileOwnerCallback(), bytes, folderId: folderId);
       uploadedFiles.add(IdElement(fileId, file.name));
     }
 
+    notifyListeners();
     if( showUploadButton ){
       closeLog();
     }

@@ -15,6 +15,18 @@ import 'package:webapp_utils/functions/list_utils.dart';
 class SingleSelectTableComponent extends MultiSelectTableComponent {
   SingleSelectTableComponent(super.id, super.groupId, super.componentLabel, super.dataFetchCallback);
 
+
+  IdElement getSelected() {
+    if( selected.isEmpty ){
+      return IdElement("", "");
+    }else{
+      var el = selected.first;
+
+      return IdElement(el.id.replaceFirst("MV", "").split("|@|").first, el.label.split("|@|").first);
+    }
+
+  }
+
   @override
   Widget wrapSelectable(Widget contentWdg, List<IdElement> selectionValues) {
     return InkWell(
@@ -30,7 +42,7 @@ class SingleSelectTableComponent extends MultiSelectTableComponent {
       onTap: () {
         var clickedEl = lineToIdElement(selectionValues);
         
-        if (isSelected(selectionValues)) {
+        if (isSelected([clickedEl])) {
           deselect(clickedEl);
         } else {
           if( selectionValues.isNotEmpty ){
@@ -43,6 +55,8 @@ class SingleSelectTableComponent extends MultiSelectTableComponent {
       child: contentWdg,
     );
   }
+
+
 
 }
 

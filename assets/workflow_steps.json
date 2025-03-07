@@ -3,7 +3,42 @@
         {
             "shortName":"readFcs",
             "stepName":"Read FCS step",
-            "stepId":"ea37e940-2708-4fa4-a81d-d67079d53d68"
+            "stepId":"b4092d4e-be42-47f7-8382-46d519ddf63c"
+        },
+        {
+            "shortName":"fcsTable",
+            "stepName":"FCS Files",
+            "stepId":"8346b5cb-5e4d-41ae-be35-313abe9500d0"
+        },
+        {
+            "shortName":"annotationTable",
+            "stepName":"Annotation File",
+            "stepId":"15594fff-3f9f-4419-8d75-560034bc02e7"
+        },
+        {
+            "shortName":"logicle",
+            "stepName":"Logicle Transformation",
+            "stepId":"78726478-262f-40bd-acbd-8bed9ce0e274"
+        },
+        {
+            "shortName":"exportPdf",
+            "stepName":"Export PDF report step",
+            "stepId":"5c0619a4-e073-4962-be02-3a31250c85c7"
+        },
+        {
+            "shortName":"exportPpt",
+            "stepName":"Export PPT report step",
+            "stepId":"4ef403a9-3e85-4a01-a292-3c04cc9cc688"
+        },
+        {
+            "shortName":"channelAndDownsample",
+            "stepName":"Channel Selection and Downsampling",
+            "stepId":"78726478-262f-40bd-acbd-8bed9ce0e274"
         }
+
+
+        
+
+        
     ]
 }

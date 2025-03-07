@@ -2,42 +2,25 @@
  
     "settings":[
         {
-            "section": "PreProcess",
-            "mode":"default",
-            "step_name": "Downsampling",
-            "step_id": "",
-            "setting_name":"Downsampling",
-            "hint": "",
-            "type": "ListSingle",
-            "value": "100%",
-            "options": [
-                "10%",
-                "25%",
-                "50%",
-                "75%",
-                "100%"
-            ]
-        },
-        {
             "section": "Clustering",
             "mode":"default",
             "step_name": "Phenograph",
-            "step_id": "",
-            "setting_name":"Phenograph",
+            "step_id": "5821188f-ea58-4380-9e1d-1ed2a327fff6",
+            "setting_name":"implementation",
             "hint": "",
             "type": "ListSingle",
-            "value": "OptA",
+            "value": "Rphenograph",
             "options": [
-                "OptA",
-                "OptB"
+                "FastPG",
+                "Rphenograph"
             ]
         },
         {
             "section": "UMAP",
             "mode": "default",
             "step_name": "UMAP",
-            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
-            "setting_name":"[UMAP] N Neighbors",
+            "step_id": "ec2c9500-28bd-40ed-9749-fa4e1519fcbb",
+            "setting_name":"n_neighbors",
             "hint": "The number of neighbors considered in UMAP",
             "type": "int",
             "value": "15"
@@ -47,28 +30,11 @@
             "section": "UMAP",
             "mode": "default",
             "step_name": "UMAP",
-            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
-            "setting_name":"[UMAP] Min Dist",
+            "step_id": "ec2c9500-28bd-40ed-9749-fa4e1519fcbb",
+            "setting_name":"min_dist",
             "hint": "The minimum distance between points in the UMAP embedding",
             "type": "double",
-            "value": "0.1"
-        },
-        {
-            "section": "UMAP",
-            "mode":"default",
-            "step_name": "UMAP",
-            "step_id": "7a4a03d1-c1e7-4026-a6e9-17c0c354107b",
-            "setting_name":"[UMAP] Metric",
-            "hint": "The distance metric used in UMAP training",
-            "type": "ListSingle",
-            "value": "euclidean",
-            "options": [
-                "euclidean",
-                "cosine",
-                "correlation",
-                "braycurtis",
-                "canberra"
-            ]
+            "value": "0.5"
         }
     ]
 }

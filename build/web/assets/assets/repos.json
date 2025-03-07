@@ -1,0 +1,10 @@
+{
+    "repos":[
+        {
+            "iid":"immuno",
+            "name":"Immunophenotyping Workflow",
+            "url":"https://github.com/tercen/immunophenotyping_template",
+            "version":"2.3.0"
+        }
+    ]
+}

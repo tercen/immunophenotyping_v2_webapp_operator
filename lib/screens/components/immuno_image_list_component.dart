@@ -10,17 +10,20 @@ import 'package:webapp_model/id_element_table.dart';
 import 'package:webapp_components/components/list_component.dart';
 import 'package:webapp_components/components/image_list_component.dart';
 
+typedef ByteFetchCallback = Future<IdElementTable> Function( List<String> parentIds, String groupId );
+
 class ImmunoImageListComponent extends ImageListComponent{
-  ImmunoImageListComponent(super.id, super.groupId, super.componentLabel, super.dataFetchFunc);
-  //TODO Download PDF
-  //TODO Download PPT
+  ByteFetchCallback pdfReportFetchCallback;
+  ByteFetchCallback pptReportFetchCallback;
+  ImmunoImageListComponent(super.id, super.groupId, super.componentLabel, super.dataFetchFunc, this.pdfReportFetchCallback, this.pptReportFetchCallback);
+
   Widget downloadPdfActionWidget() {
     return IconButton(
         onPressed: () async {
           isBusy = true;
           notifyListeners();
 
-          
+          await pdfReportFetchCallback(getParentIds(), groupId);
           isBusy = false;
           notifyListeners();
         },
@@ -32,7 +35,7 @@ class ImmunoImageListComponent extends ImageListComponent{
         onPressed: () async {
           isBusy = true;
           notifyListeners();
-
+          await pptReportFetchCallback(getParentIds(), groupId);
           
           isBusy = false;
           notifyListeners();
@@ -52,13 +55,52 @@ class ImmunoImageListComponent extends ImageListComponent{
         sep,
         wrapActionWidget(collapseAllActionWidget()),
         sep,
-        // wrapActionWidget(downloadActionWidget()),
-        // sep,
+        wrapActionWidget(downloadPdfActionWidget()),
+        sep,
+        wrapActionWidget(downloadPptActionWidget()),
+        sep,
         wrapActionWidget(filterActionWidget(), width: 200),
       ],
     );
   }
 
+    @override
+  Widget createWidget(BuildContext context, IdElementTable table) {
+    widgetExportContent.clear();
+    expansionControllers.clear();
+
+    String titleColName = table.colNames
+        .firstWhere((e) => e.contains("filename"), orElse: () => "");
+
+    String stepColName = table.colNames
+        .firstWhere((e) => e.contains("step"), orElse: () => "");
+    String dataColName =
+        table.colNames.firstWhere((e) => e.contains("data"), orElse: () => "");
+
+    List<Widget> wdgList = [];
+
+    for (var ri = 0; ri < table.nRows(); ri++) {
+      var title = table.columns[titleColName]![ri].label;
+      title = "$title [${table.columns[stepColName]![ri].label}]";
+
+      if (shouldIncludeEntry(title)) {
+        var imgData =
+            Uint8List.fromList(table.columns[dataColName]![ri].label.codeUnits);
+        Widget wdg = createImageListEntry(title, imgData);
+
+        widgetExportContent.add(ExportPageContent(title, imgData));
+
+        if (collapsible == true) {
+          wdg = collapsibleWrap(title, wdg);
+        }
+        wdgList.add(wdg);
+      }
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [createToolbar(), ...wdgList],
+    );
+  }
 }
 
 // class ExportPageContent {
