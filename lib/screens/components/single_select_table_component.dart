@@ -26,6 +26,12 @@ class SingleSelectTableComponent extends MultiSelectTableComponent {
     }
 
   }
+  //   bool isSelected(List<IdElement> rowEls) {
+  //   var lineEl = lineToIdElement(rowEls);
+
+  //   return selected.any((e) => e.id == lineEl.id);
+  // }
+
 
   @override
   Widget wrapSelectable(Widget contentWdg, List<IdElement> selectionValues) {
@@ -40,13 +46,14 @@ class SingleSelectTableComponent extends MultiSelectTableComponent {
         notifyListeners();
       },
       onTap: () {
-        var clickedEl = lineToIdElement(selectionValues);
         
-        if (isSelected([clickedEl])) {
+        var clickedEl = lineToIdElement(selectionValues);
+
+        if (isSelected(selectionValues)) {
           deselect(clickedEl);
         } else {
-          if( selectionValues.isNotEmpty ){
-            deselect(selectionValues.first);
+          if( selected.isNotEmpty ){
+            selected.clear();
           }
           select(clickedEl);
         }

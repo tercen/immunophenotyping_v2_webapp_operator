@@ -71,7 +71,7 @@ class _UploadScreenState extends State<UploadScreen>
     var annotationComponent = UploadTableTeamComponent(
         "uploadAnnotation",
         getScreenId(),
-        "Marker Annotation File",
+        "Sample Annotation File",
         widget.modelLayer.app.projectId,
         "",
         maxHeight: 150,
@@ -116,12 +116,16 @@ class _UploadScreenState extends State<UploadScreen>
 
     await _readFcsFiles();
 
+
     closeLog();
 
-    setState(() {
-      
-    });
+
+    widget.modelLayer.app.navMenu.selectScreen("Configuration" );
+
+    
   }
+
+
 
   Future<void> _createLoadProject() async {
     log("Creating/Loading Project", dialogTitle: "Create Project");

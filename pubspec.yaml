@@ -88,6 +88,7 @@ flutter:
     - assets/repos.json
     - assets/workflow_settings.json
     - assets/workflow_steps.json
+    - assets/qc_channels.json
 
   fonts:
     - family: RobotMono

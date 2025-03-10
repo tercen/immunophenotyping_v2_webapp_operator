@@ -45,7 +45,7 @@ class _ReportScreenState extends State<ReportScreen>
     setState(() {});
   }
 
-  //TODO Does it work with a single level?
+
   @override
   void initState() {
     super.initState();

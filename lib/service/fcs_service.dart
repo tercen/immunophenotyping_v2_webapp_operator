@@ -1,3 +1,8 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:json_string/json_string.dart';
 import 'package:sci_tercen_client/sci_client_service_factory.dart' as tercen;
 import 'package:sci_tercen_model/sci_model.dart' as sci;
 import 'package:webapp_model/id_element.dart';
@@ -6,33 +11,70 @@ import 'package:webapp_utils/functions/workflow_utils.dart';
 import 'package:webapp_utils/mixin/data_cache.dart';
 
 class FcsService with DataCache {
-
-  Future<IdElementTable> fetchMarkers(sci.Workflow workflow, String readFcsStepId) async{
+  Future<IdElementTable> fetchMarkers(
+      sci.Workflow workflow, String readFcsStepId) async {
     var key = "${workflow.id}_${workflow.rev}";
-    if(hasCachedValue(key )){
+    if (hasCachedValue(key)) {
       return getCachedValue(key);
     }
     var resTbl = IdElementTable();
     var factory = tercen.ServiceFactory();
     List<IdElement> options = [];
-    for( var stp in workflow.steps ){
-      if( stp.id == readFcsStepId){
-        var srIds = WorkflowUtils.getSimpleRelations((stp as sci.DataStep).computedRelation);
-        var schList = await factory.tableSchemaService.list(srIds.map((e) => e.id).toList());
-        for( var sch in schList ){
+    var qcChannels = await getQcChannels();
 
-          if( sch.name == "Variables"){
-            var col = sch.columns.firstWhere((e) => e.name.contains("name"));
-            var markerTbl = await factory.tableSchemaService.select(sch.id ,[col.name], 0, sch.nRows);
+    for (var stp in workflow.steps) {
+      if (stp.id == readFcsStepId) {
+        var srIds = WorkflowUtils.getSimpleRelations(
+            (stp as sci.DataStep).computedRelation);
+        var schList = await factory.tableSchemaService
+            .list(srIds.map((e) => e.id).toList());
+        for (var sch in schList) {
+          if (sch.name == "Variables") {
+            var nameCol =
+                sch.columns.firstWhere((e) => e.name.contains("name"));
+            var descCol =
+                sch.columns.firstWhere((e) => e.name.contains("description"));
+
+            var markerTbl = await factory.tableSchemaService
+                .select(sch.id, [nameCol.name, descCol.name], 0, sch.nRows);
+
+            var rows = List<int>.generate(sch.nRows, (i) => i );
             
-            options.addAll( (markerTbl.columns[0].values as List<String>).map((e) => IdElement(e, e)) );
+            options.addAll(rows
+                .where((row) =>
+                    !qcChannels.contains((markerTbl.columns[0].values as List<String>)[row]))
+                .map((row) {
+              var desc = markerTbl.columns[1].values[row];
+              return IdElement(desc, desc);
+            }));
+            
           }
         }
       }
     }
+
     resTbl.addColumn("options", data: options);
 
     addToCache(key, resTbl);
     return resTbl;
+  }
+
+  Future<List<String>> getQcChannels() async {
+    var qcCacheKey = "qcChannels";
+
+    if (hasCachedValue(qcCacheKey)) {
+      return getCachedValue(qcCacheKey);
+    } else {
+      var qcChannelsJson =
+          await rootBundle.loadString("assets/qc_channels.json");
+
+      final jsonString = JsonString(qcChannelsJson);
+      final qcChannelsMap = jsonString.decodedValueAsMap;
+
+      var channelList = (qcChannelsMap["channels"] as List).map((e) => e as String).toList();
+      addToCache(qcCacheKey, channelList );
+
+      return getCachedValue(qcCacheKey);
+    }
   }
 }
