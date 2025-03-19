@@ -1,28 +1,34 @@
-import 'dart:async';
-
+import 'dart:convert';
+import 'dart:html' as html;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:immunophenotyping_webapp/screens/components/immuno_image_list_component.dart';
+import 'package:immunophenotyping_webapp/screens/components/single_select_table_component.dart';
+import 'package:immunophenotyping_webapp/screens/components/tmp_action.dart';
+import 'package:immunophenotyping_webapp/screens/components/tmp_workflow.dart';
+import 'package:immunophenotyping_webapp/screens/utils/date_utils.dart';
 import 'package:intl/intl.dart';
-import 'package:webapp_components/components/action_list_component.dart';
-import 'package:webapp_components/components/workflow_list_component.dart';
+import 'package:webapp_components/definitions/list_action.dart';
+import 'package:webapp_components/extra/infobox.dart';
 
-import 'package:sci_tercen_client/sci_client_service_factory.dart' as tercen;
 import 'package:webapp_components/screens/screen_base.dart';
+import 'package:webapp_components/components/leaf_selectable_list.dart';
+import 'package:webapp_components/components/selectable_list.dart';
+import 'package:webapp_components/widgets/wait_indicator.dart';
 import 'package:webapp_model/webapp_data_base.dart';
 import 'package:immunophenotyping_webapp/webapp_data.dart';
-
+import 'package:webapp_model/webapp_table.dart';
 import 'package:webapp_ui_commons/mixin/progress_log.dart';
 
-import 'package:webapp_components/abstract/multi_value_component.dart';
-import 'package:webapp_components/components/table_component.dart';
-import 'package:webapp_ui_commons/mixin/progress_log.dart';
-import 'package:webapp_components/action_components/button_component.dart';
 import 'package:webapp_model/id_element_table.dart';
 import 'package:webapp_model/id_element.dart';
-
+import 'package:webapp_ui_commons/styles/styles.dart';
+import 'package:webapp_workflow/runners/workflow_queu_runner.dart';
+import 'package:webapp_utils/functions/workflow_utils.dart';
 import 'package:sci_tercen_model/sci_model.dart' as sci;
-import 'package:webapp_components/widgets/wait_indicator.dart';
+import 'package:sci_tercen_client/sci_client_service_factory.dart' as tercen;
 
-//TODO Clean up and move some fetch functions to the modellayer/webapp_lib
 class TaskManagerScreen extends StatefulWidget {
   final WebAppData modelLayer;
   const TaskManagerScreen(this.modelLayer, {super.key});
@@ -33,12 +39,6 @@ class TaskManagerScreen extends StatefulWidget {
 
 class _TaskManagerScreenState extends State<TaskManagerScreen>
     with ScreenBase, ProgressDialog {
-
-  Timer? refreshTimer;
-  bool firstRefresh = true;
-  List<sci.Workflow> currentList = [];
-  List<String> currentStatus = [];
-
   @override
   String getScreenId() {
     return "TaskManagerScreen";
@@ -48,9 +48,6 @@ class _TaskManagerScreenState extends State<TaskManagerScreen>
   void dispose() {
     super.dispose();
     disposeScreen();
-    if( refreshTimer != null ){
-      refreshTimer!.cancel();
-    }
   }
 
   @override
@@ -61,200 +58,291 @@ class _TaskManagerScreenState extends State<TaskManagerScreen>
   @override
   void initState() {
     super.initState();
-    
-    var workflowComponent = WorkflowListComponent("workflowList", getScreenId(), "Workflows", 
-          _fetchWorkflows, ["name", "status", "date"],  widget.modelLayer.app.projectHref,
-          actions: [
-            ListAction(const Icon(Icons.cancel), cancelWorkflow, enabledCallback: widget.modelLayer.workflowService.canCancelWorkflow)
-          ],
-          emptyMessage: "Retrieving Tasks",
-          colWidths: [40, 10, 10],
-          detailColumn: "error");
-    addComponent("default", workflowComponent);
 
+    var workflowInfoBox =
+        InfoBoxBuilder("Workflow Settings", workflowSettingsInfoBox);
+
+    var taskList = WorkflowTaskComponent(
+        "workflows", getScreenId(), "Running Tasks", fetchTasks, [
+      //#509bb4
+      ListAction(
+          const Icon(Icons.stop_circle_rounded,
+              color: Color.fromARGB(255, 103, 153, 178)),
+          cancelTask),
+    ], [
+      ListAction(
+          const Icon(Icons.info_outline_rounded,
+              color: Color.fromARGB(255, 103, 153, 178)),
+          workflowInfo)
+    ],
+        hideColumns: [
+          "Id"
+        ]);
+
+    var workflowList = ActionTableComponent(
+        "workflows",
+        getScreenId(),
+        "Finished Workflows",
+        fetchWorkflows,
+        [
+          ListAction(
+              const Icon(Icons.error_outline,
+                  color: Color.fromARGB(255, 103, 153, 178)),
+              workflowInfoWithError),
+        ],
+        hideColumns: ["Id"]);
+
+    addComponent("default", workflowList);
+    addComponent("default", taskList);
     
 
     initScreen(widget.modelLayer as WebAppDataBase);
-
-    refreshTimer = Timer.periodic( const Duration(seconds: 1), (timer) async {
-      // if( firstRefresh ){
-      //   firstRefresh = false;
-      // }else{
-      if( await refreshWorkflowList()){
-        refresh();
-      }
-
-        
-      // }
-    });
   }
 
-  bool canCancelWorkflow(IdElementTable row){
-    return row["status"][0].label != "Done" && row["status"][0].label != "Failed" && row["status"][0].label != "Unknown";
+  Widget buildTest() {
+    return AlertDialog(
+      title: Text(
+        "Error Information",
+        style: Styles()["textH1"],
+      ),
+      content: Container(
+        constraints: const BoxConstraints(maxHeight: 700, maxWidth: 1200),
+        child: Text("AAA "),
+      ),
+    );
   }
 
-  Future<void> cancelWorkflow(IdElementTable row) async {
-    openDialog(context);
-    
-    var workflowId = row["name"][0].id;
+  Future<void> cancelTask(List<String> row) async {
+    Fluttertoast.showToast(
+        msg: "Cancelling task",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM_LEFT,
+        webPosition: "left",
+        webBgColor: "linear-gradient(to bottom, #aaaaff, #eeeeaff)",
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.lightBlue[100],
+        textColor: Styles()["black"],
+        fontSize: 16.0);
+    var taskId = row.first;
+    var factory = tercen.ServiceFactory();
+    await factory.taskService.cancelTask(taskId);
 
-    log("Canceling workflow  ${row["name"][0].label}");
+    //     Fluttertoast.showToast(
+    //     msg: "Cancelling task",
+    //     toastLength: Toast.LENGTH_LONG,
+    //     gravity: ToastGravity.BOTTOM_LEFT,
+    //     webPosition: "left",
+    //     webBgColor: "linear-gradient(to bottom, #aaaaff, #eeeeaff)",
+    //     timeInSecForIosWeb: 1,
+    //     backgroundColor: Colors.lightBlue[100],
+    //     textColor: Styles()["black"],
+    //     fontSize: 16.0
+    // );
+  }
+
+  //TODO use cache for this
+  Future<Widget> workflowSettingsInfoBox(String workflowId,
+      {bool printError = false}) async {
     var factory = tercen.ServiceFactory();
     var workflow = await factory.workflowService.get(workflowId);
 
-    var taskId = workflow.meta.firstWhere((e) => e.key == "run.task.id").value;
-    await factory.taskService.cancelTask(taskId);
-    
-    await factory.workflowService.delete(workflow.id, workflow.rev);
-    closeLog();
-    
-  }
+    Widget content = Container();
 
+    var metaList = workflow.meta;
 
-  Future<Map<String, String>> getWorkflowStatus(sci.Workflow workflow) async {
-    var meta = workflow.meta;
-    var results = {"status":"", "error":"", "finished":"true"};
-    results["status"] = "Unknown";
-    
+    var markers = metaList
+        .firstWhere((p) => p.key == "selected.markers",
+            orElse: () => sci.Pair.from("", ""))
+        .value
+        .split("|@|");
 
-    if(meta.any((e) => e.key == "run.task.id")){
+    var contentString = "Selected markers\n";
+    for (var i = 0; i < markers.length; i++) {
+      contentString += markers[i];
 
-      var factory = tercen.ServiceFactory();
-
-      List<String> currentOnQueuWorkflow = [];
-      List<String> currentOnQueuStep = [];
-      List<sci.State> currentOnQueuStatus = [];
-      var compTasks = await factory.taskService.getTasks(["RunComputationTask"]);
-        for( var ct in compTasks ){
-          if( ct is sci.RunComputationTask){
-            for( var p in ct.environment ){
-              if( p.key == "workflow.id"){
-                currentOnQueuWorkflow.add(p.value);
-              }
-              if( p.key == "step.id"){
-                currentOnQueuStep.add(p.value);
-                currentOnQueuStatus.add(ct.state);
-              }
-            }
-          }
-        }
-      
-      var isRunning = currentOnQueuWorkflow.contains(workflow.id);
-      var isFail = workflow.steps.any((e) => e.state.taskState is sci.FailedState );
-
-
-      if( isFail ){
-        results["status"] = "Failed";
-        results["error"] = meta.firstWhere((e) => e.key.contains("run.error"), orElse: () => sci.Pair.from("", "")).value;
-        if( meta.any((e) => e.key == "run.error.reason")){
-          results["error"] = meta.firstWhere((e) => e.key == "run.error.reason").value;
-        }else{
-          results["error"] = "${results["error"]}\n\nNo Error Details were Provided.";
-        }
-        results["finished"] = isRunning ? "false" : "true";
-      }else{
-        var status = isRunning ? "Running" : "Pending";
-        var allInit = true;
-        var allDone = true;
-        results["finished"] = isRunning ? "false" : "true";
-        
-        for( var s in workflow.steps ){
-          for( var i = 0; i < currentOnQueuStep.length; i++ ){
-            if( currentOnQueuStep[i] == s.id && currentOnQueuWorkflow[i] == workflow.id ){
-              status = currentOnQueuStatus[i] is sci.PendingState ? "Pending" : "Running";
-            }
-          }
-         
-          allInit = allInit && (s.state.taskState is sci.InitState);
-          allDone = allDone && (s.state.taskState is sci.DoneState);
-        }
-        if( allInit  ){
-          status = "Not Started";
-        }
-        if( allDone ){
-          status = "Done";
-        }
-        results["status"] = status;
-      }
-    }
-    return results;
-  }
-
-  Future<IdElementTable> _fetchWorkflows( List<String> parentKeys, String groupId ) async {
-    var workflows = List<sci.Workflow>.from( currentList );
-
-    List<IdElement> nameCol = [];
-    List<IdElement> statusCol = [];
-    List<IdElement> dateCol = [];
-    List<IdElement> errorCol = [];
-
-    final dateFormatter =  DateFormat('yyyy/MM/dd hh:mm');
-    
-    for( var w in workflows ){
-      var dt = DateTime.parse(w.lastModifiedDate.value);
-      var stMap =  await getWorkflowStatus(w);
-      nameCol.add(IdElement(w.id, w.name));
-      statusCol.add(IdElement(w.id, stMap["status"]!));
-      dateCol.add(IdElement(w.id, dateFormatter.format(dt)));
-      errorCol.add(IdElement(w.id, stMap["error"]!));
-
-    }
-    var tbl = IdElementTable()
-      ..addColumn("name", data: nameCol)
-      ..addColumn("status", data: statusCol)
-      ..addColumn("date", data: dateCol)
-      ..addColumn("error", data: errorCol);
-
-    return tbl;
-  }
-
-  Future<List<sci.Workflow>> fetchWorkflowsRemote(String projectId) async{
-    var factory = tercen.ServiceFactory();
-    var projObjs = await factory.projectDocumentService.findProjectObjectsByLastModifiedDate(startKey: [projectId, '0000'], endKey: [projectId, '9999']);
-    var workflowIds = projObjs.where((e) => e.subKind == "Workflow").map((e) => e.id).toList();
-
-    return await factory.workflowService.list(workflowIds);
-  }
-
-
-  
-
-
-  Future<bool> refreshWorkflowList() async {
-    var workflowList = await fetchWorkflowsRemote(widget.modelLayer.project.id);
-
-    List<String> statusList = [];
-
-    for( var w in workflowList ){
-      var stMap = await getWorkflowStatus(w);
-      statusList.add( stMap["status"]!);
-    }
-    // var statusList = workflowList.map((w) async {
-    //   var stMap = await getWorkflowStatus(w);
-    //   return stMap["status"]!;
-    // } ).toList();
-
-    
-    if( workflowList.length != currentList.length ){
-      currentList = workflowList;
-      currentStatus = statusList;
-      return true;  
-    }else{
-      for( var i = 0; i < workflowList.length; i++ ){
-        if( workflowList[i].id != currentList[i].id || currentStatus[i] != statusList[i] ){
-          currentList = workflowList;
-          currentStatus = statusList;
-          return true;  
+      if (i < (markers.length - 1)) {
+        if (((i + 1) % 10) == 0) {
+          contentString += "\n";
+        } else {
+          contentString += ",";
         }
       }
     }
 
+    contentString += "\n\nGeneral Settings:\n";
+
+    for (var meta in metaList) {
+      if (meta.key.startsWith("setting")) {
+        contentString += meta.key.split(".").last;
+        contentString += ": ";
+        contentString += meta.value;
+        contentString += "\n";
+      }
+    }
+
+    if (printError) {
+      var status =
+          await widget.modelLayer.workflowService.getWorkflowStatus(workflow);
+      if (status["error"] != null && status["error"] != "") {
+        contentString += "\nERROR INFORMATION";
+        contentString += "\n\n";
+        contentString += status["error"]!;
+      }
+    }
+
+    content = Text(
+      contentString,
+      style: Styles()["text"],
+    );
+    return content;
+  }
+
+  Future<void> workflowInfoWithError(List<String> row) async {
+    showDialog(
+        context: context,
+        builder: (dialogContext) {
+          return StatefulBuilder(builder: (stfCtx, stfSetState) {
+            return FutureBuilder(
+                future: workflowSettingsInfoBox(row.first, printError: true),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data != null) {
+                    return AlertDialog(
+                      title: Text(
+                        "Workflow Information",
+                        style: Styles()["textH2"],
+                      ),
+                      content: snapshot.data!,
+                    );
+                  } else {
+                    return TercenWaitIndicator()
+                        .waitingMessage(suffixMsg: "Loading information");
+                  }
+                });
+          });
+        });
+  }
+
+  Future<void> workflowInfo(List<String> row) async {
+    showDialog(
+        context: context,
+        builder: (dialogContext) {
+          return StatefulBuilder(builder: (stfCtx, stfSetState) {
+            return FutureBuilder(
+                future: workflowSettingsInfoBox(row.first),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data != null) {
+                    return AlertDialog(
+                      title: Text(
+                        "Workflow Information",
+                        style: Styles()["textH2"],
+                      ),
+                      content: snapshot.data!,
+                    );
+                  } else {
+                    return TercenWaitIndicator()
+                        .waitingMessage(suffixMsg: "Loading information");
+                  }
+                });
+          });
+        });
+  }
+
+  Future<void> action1(List<String> row) async {
+    print("Doing action1");
+  }
+
+  Future<void> action2(List<String> row) async {
+    print("Doing action2");
+  }
+
+  bool action2enabled(List<String> row) {
     return false;
+  }
+
+  bool isFullyRun(sci.Workflow w) {
+    bool fullyRun = true;
+    for (var stp in w.steps) {
+      fullyRun = fullyRun && stp.state.taskState.isFinal;
+      fullyRun = fullyRun && stp.state.taskState is! sci.FailedState;
+    }
+    return fullyRun;
+    // return !w.steps.any((stp) => !(stp.state.taskState.isFinal && stp.state.taskState is! sci.FailedState) );
+  }
+
+  bool isFinished(sci.Workflow workflow) {
+    return workflow.steps
+        .where((step) => !step.state.taskState.isFinal)
+        .isEmpty;
+  }
+
+  Future<WebappTable> fetchWorkflows() async {
+    var res = WebappTable();
+
+    var workflows = await widget.modelLayer.workflowService
+        .fetchWorkflowsRemote(widget.modelLayer.app.projectId);
+    workflows = workflows
+        .where((doc) => doc.hasMeta("immuno.workflow"))
+        .where((doc) => doc.getMeta("immuno.workflow")! == "true")
+        .toList();
+    List<String> status = [];
+    List<String> error = [];
+
+    for (var w in workflows) {
+      var sw = await widget.modelLayer.workflowService.getWorkflowStatus(w);
+      status.add(sw["status"]! == "Failed" ? "Failed" : "");
+      error.add(sw["error"]!);
+    }
+
+    res.addColumn("Id", data: workflows.map((w) => w.id).toList());
+    res.addColumn("Name", data: workflows.map((w) => w.name).toList());
+    res.addColumn("Fail Status", data: status);
+    // res.addColumn("Error", data: error);
+    res.addColumn("Last Update",
+        data: workflows
+            .map((w) => DateFormatter.formatShort(w.lastModifiedDate))
+            .toList());
+
+    return res;
+  }
+
+  Future<WebappTable> fetchTasks() async {
+    var res = WebappTable();
+
+    var factory = tercen.ServiceFactory();
+    var tasks = await factory.taskService.getTasks(["RunWorkflowTask"]);
+    var compTasks = tasks.whereType<sci.RunWorkflowTask>();
+
+    // var workflows = await widget.modelLayer.workflowService.fetchWorkflowsRemote(widget.modelLayer.app.projectId);
+    print("Found ${compTasks.length} tasks");
+
+    var workflowIds = compTasks.map((task) => task.workflowId).toList();
+
+    var workflows = await factory.workflowService.list(workflowIds);
+
+    // var workflowFolderIds = workflows.map((wkf) => wkf.folderId);
+    // var workflowFolderNames = widget.modelLayer.getProjectFiles().where((doc) => workflowFolderIds.contains( doc.id ) ).map((doc) => doc.name);
+
+    // var factory = tercen.ServiceFactory();
+
+    // workflows = workflows.where((workflow) => isFinished(workflow)).toList();
+    // var taskIds = workflows.map((w) => w.hasMeta("workflow.task.id") ? w.getMeta("workflow.task.id")! : "" ).toList();
+    res.addColumn("Id", data: compTasks.map((w) => w.id).toList());
+    res.addColumn("Name", data: workflows.map((w) => w.name).toList());
+    res.addColumn("WorkflowIds", data: workflows.map((w) => w.id).toList());
+    res.addColumn("Last Update",
+        data: workflows
+            .map((w) => DateFormatter.formatShort(w.lastModifiedDate))
+            .toList());
+    // if( res.nRows > 0){
+    //   print(res);
+    // }else{
+    //   print("UNEXPECTED!");
+    // }
+    return res;
   }
 
   @override
   Widget build(BuildContext context) {
     return buildComponents(context);
-    
   }
 }

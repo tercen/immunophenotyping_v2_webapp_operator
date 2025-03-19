@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:immunophenotyping_webapp/globals.dart' as globals;
@@ -15,12 +16,13 @@ import 'package:immunophenotyping_webapp/screens/upload_screen.dart';
 import 'package:immunophenotyping_webapp/screens/settings_screen.dart';
 import 'package:immunophenotyping_webapp/webapp.dart';
 import 'package:immunophenotyping_webapp/webapp_data.dart';
+import 'package:webapp_model/model/view_state.dart';
 import 'package:webapp_ui_commons/mixin/progress_log.dart';
 import 'package:webapp_ui_commons/styles/default_style.dart';
 import 'package:webapp_ui_commons/styles/styles.dart';
 
 import 'package:sci_tercen_client/sci_client.dart' as sci;
-
+import 'package:sci_tercen_client/sci_client_service_factory.dart' as tercen;
 final navigatorKey = GlobalKey<NavigatorState>();
 
 //Prevents multiple error screens overwriting one another
@@ -50,6 +52,9 @@ void main() async {
               context: navigatorKey.currentContext!,
               builder: (context) => errorHandler.build(context));
 
+        }else{
+          print(error);
+          print(stackTrace);
         }
       } else {
         print("Context or null check error");
@@ -83,7 +88,7 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
 
   late final Widget logo;
 
-
+  bool initStateFinished = false;
   @override
   initState() {
     
@@ -105,12 +110,7 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
       log("Initializing File Structure",
           dialogTitle: "WebApp");
 
-      var workflowSettingsFiles = [
-        "assets/workflow_settings.json"
-      ];
-
       Styles().init([DefaultStyle()]);
-
       
       var img = await rootBundle.load("assets/img/logo.png");
       var bData = img.buffer.asUint8List();
@@ -118,9 +118,10 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
             height: 60));
 
       // BASIC Initialization
+      // settingFilterFile
       await appData.init(app.projectId, app.projectName, app.username,
           reposJsonPath: "assets/repos.json",
-          settingFiles: workflowSettingsFiles,
+          settingFilterFile: "assets/settings_screen_filter.json",
           stepMapperJsonFile: "assets/workflow_steps.json");
 
       app.navMenu.project = app.projectName;
@@ -133,6 +134,8 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
       //     reposJsonPath: "assets/repos.json",
       //     stepMapperJsonFile: "assets/workflow_steps.json",
       //     settingFiles: workflowSettingsFiles);
+
+      // 
 
       app.addNavigationPage(
           "Upload Data", UploadScreen(appData, key: app.getKey("Upload")));
@@ -153,16 +156,59 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
 
       // await app.postInit();
       app.isInitialized = true;
+      initStateFinished = true;
       refresh();
       
       closeLog();
     });
   }
 
+
   void refresh() {
     setState(() {});
   }
 
+
+  // Future<void> loadModel(WebAppData modelLayer) async {
+  //   if (app.projectId != "") {
+  //     var projectId = app.projectId;
+  //     var user = app.username;
+
+  //     var folder = await modelLayer.projectService
+  //         .getOrCreateFolder(projectId, user, ".tercen", parentId: "");
+
+  //     var viewFile = await modelLayer.projectService.getOrCreateFile(
+  //         projectId, user, "${user}_view_05",
+  //         parentId: folder.id);
+
+  //     print("FileContent");
+  //     var map = (getFileContent(viewFile) );
+  //     // print(map);
+  //     // print(map.runtimeType);
+  //     // ViewState
+  //     // ViewState.fromJson( map as Map<String, List<String>> ); 
+      
+  //   }
+  // }
+
+
+  // dynamic getFileContent(sci.FileDocument fileDoc) {
+
+  //   if (fileDoc.metadata.contentType == "application/json") {
+  //     print("A");
+  //     print(fileDoc.toJson());
+  //     print(fileDoc.getMeta("file.content")!);
+  //     print(fileDoc.getMeta("file.content")!.runtimeType);
+  //     print("..............");
+  //     return  jsonDecode(fileDoc.getMeta("file.content")!);
+  //   } else {
+  //     print("B");
+  //     print(fileDoc.getMeta("file.content")!);
+  //     print(fileDoc.getMeta("file.content")!.runtimeType);
+  //     print("..............");
+  //     return fileDoc.getMeta("file.content")!;
+  //   }
+  // }
 
   Widget _buildBanner() {
     return Column(
@@ -189,7 +235,7 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
 
   @override
   Widget build(BuildContext context) {
-    if (app.isInitialized) {
+    if (initStateFinished) {
       var bannerWdg = _buildBanner();
       app.banner = bannerWdg;
 

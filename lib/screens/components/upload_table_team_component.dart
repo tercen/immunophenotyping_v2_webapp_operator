@@ -22,7 +22,9 @@ class UploadTableTeamComponent extends UploadTableComponent {
       super.maxHeight = 400,
       super.maxWidth,
       super.allowedMime,
-      super.showUploadButton = true});
+      super.showUploadButton = true,
+      super.multiFile = true,
+      super.fetchProjectFiles});
 
   void setProjectOwnerCallback(
       String Function() projectIdCallback, String Function() ownerCallback) {
@@ -50,7 +52,8 @@ class UploadTableTeamComponent extends UploadTableComponent {
           file.name, projectIdCallback(), fileOwnerCallback(), bytes,
           folderId: folderId);
 
-      uploadedFiles.add(IdElement(fileId, file.name));
+      uploadedFileIds.add(fileId);
+      uploadedFilenames.add(file.name);
     }
 
     for (int i = 0; i < platformFileList.length; i++) {
@@ -63,7 +66,8 @@ class UploadTableTeamComponent extends UploadTableComponent {
       var fileId = await uploadFileAsTable(
           file.name, projectIdCallback(), fileOwnerCallback(), bytes,
           folderId: folderId);
-      uploadedFiles.add(IdElement(fileId, file.name));
+      uploadedFileIds.add(fileId);
+      uploadedFilenames.add(file.name);
     }
     notifyListeners();
     if (showUploadButton) {

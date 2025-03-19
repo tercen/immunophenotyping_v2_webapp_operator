@@ -2,3 +2,5 @@ flutter packages upgrade && flutter packages get && flutter run  --web-hostname 
 flutter build web --profile --dart-define=Dart2jsOptimization=O0 
 
 flutter packages upgrade && flutter packages get
+
+dart run build_runner build

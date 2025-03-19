@@ -1,0 +1,13 @@
+
+{
+    "filters":[
+        {
+            "screen":"SettingsScreen",
+            "type":"include",
+            "stepName":"Dimension Reduction: UMAP",
+            "settingNames":"n_neighbors,min_dist"
+        }
+    ]
+}
+
+
