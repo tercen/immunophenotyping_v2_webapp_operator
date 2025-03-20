@@ -128,6 +128,9 @@ class _ReportScreenState extends State<ReportScreen>
     // return !w.steps.any((stp) => !(stp.state.taskState.isFinal && stp.state.taskState is! sci.FailedState) );
   }
 
+  String getFolderName(String folderId){
+    return widget.modelLayer.getProjectFiles().firstWhere((doc) => folderId ==  doc.id , orElse: () => sci.ProjectDocument() ).name;
+  }
 
   Future<WebappTable> fetchWorkflows() async {
     var res = WebappTable();
@@ -140,8 +143,8 @@ class _ReportScreenState extends State<ReportScreen>
         .toList();
 
     var workflowFolderIds = workflows.map((wkf) => wkf.folderId);
-    var workflowFolderNames = widget.modelLayer.getProjectFiles().where((doc) => workflowFolderIds.contains( doc.id ) ).map((doc) => doc.name);
-    
+    var workflowFolderNames = workflowFolderIds.map((folderId) => getFolderName(folderId)).toList();
+
 
     res.addColumn("Id", data: workflows.map((w) => w.id).toList() );
     res.addColumn("Name", data: workflows.map((w) => w.name).toList());

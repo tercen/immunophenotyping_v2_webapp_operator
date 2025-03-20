@@ -240,7 +240,7 @@ class MultiSelectTableComponent
   Widget buildTable(WebappTable table, BuildContext context) {
     dataTable = table;
     var nRows = table.nRows;
-
+    
     colNames = table.colNames
         .where((colName) => shouldIncludeColumn(colName))
         .toList();

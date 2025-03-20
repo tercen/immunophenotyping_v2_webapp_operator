@@ -29,8 +29,7 @@ class WorkflowTaskComponent extends ActionTableComponent {
       super.actions,
       this.workflowActions,
       {super.excludeColumns,
-      super.hideColumns,
-      InfoBoxBuilder? infoBoxBuilder});
+      super.hideColumns});
 
   @override
   Widget buildTable(WebappTable table, BuildContext context) {

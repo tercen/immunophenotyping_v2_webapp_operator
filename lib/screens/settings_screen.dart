@@ -267,8 +267,10 @@ class _SettingsScreenState extends State<SettingsScreen>
       
       var setting = SettingsConverter.settingComponentToStepSetting(comp);
       if (setting != null) {
-        runner.addWorkflowMeta("setting.${setting.settingName}",  setting.value );
-        runner.addSetting(setting);
+        if( setting.value != ""){
+          runner.addWorkflowMeta("setting.${setting.settingName}",  setting.value );
+          runner.addSetting(setting);
+        }
       }
     }
     }

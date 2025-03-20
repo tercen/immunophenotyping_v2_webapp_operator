@@ -3,13 +3,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:webapp_components/abstract/component.dart';
 
-
 import 'package:webapp_components/abstract/serializable_component.dart';
 import 'package:webapp_components/definitions/component.dart';
 import 'package:webapp_components/definitions/functions.dart';
 import 'package:webapp_components/definitions/list_action.dart';
 import 'package:webapp_components/extra/infobox.dart';
-
 
 import 'package:webapp_components/mixins/component_base.dart';
 import 'package:webapp_components/mixins/component_cache.dart';
@@ -19,6 +17,8 @@ import 'package:webapp_model/utils/key_utils.dart';
 import 'package:webapp_model/webapp_table.dart';
 import 'package:webapp_ui_commons/styles/styles.dart';
 import 'package:webapp_utils/functions/list_utils.dart';
+
+enum ComponentState { inactive, idle, busy }
 
 class ActionTableComponent
     with ChangeNotifier, ComponentBase, ComponentCache, ComponentInfoBox
@@ -31,8 +31,7 @@ class ActionTableComponent
   List<String> colNames = [];
   final List<ListAction> actions;
   final String valueSeparator = "|@|";
-
-  
+  ComponentState currentState = ComponentState.idle;
 
   String sortingCol = "";
   String sortDirection = "";
@@ -114,24 +113,6 @@ class ActionTableComponent
         ));
   }
 
-  TableRow createTableHeader(List<String> colNames ) {
-    var infoboxHeader = TableCell(child:createHeaderCell(""));
-    var actionsHeader = TableCell(child:createHeaderCell("Actions"));
-    var nameRows = colNames.map((el) {
-      return TableCell(
-          verticalAlignment: TableCellVerticalAlignment.middle,
-          child: createHeaderCell(el));
-    }).toList();
-    TableRow row = TableRow(children: [
-      infoboxHeader,
-      ...nameRows,
-      actionsHeader,
-      
-    ]);
-
-    return row;
-  }
-
   bool shouldDisplayColumn(String colName) {
     return hideColumns == null || !hideColumns!.contains(colName);
   }
@@ -144,8 +125,26 @@ class ActionTableComponent
     currentRowKey = KeyUtils.listToKey(selectionValues);
   }
 
+  TableRow createTableHeader(List<String> colNames) {
+    var infoboxHeader = TableCell(child: createHeaderCell(""));
+    var actionsHeader = TableCell(child: createHeaderCell("Actions"));
+    var nameRows = colNames.map((el) {
+      return TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle,
+          child: createHeaderCell(el));
+    }).toList();
+    TableRow row = TableRow(children: [
+      infoboxHeader,
+      ...nameRows,
+      actionsHeader,
+    ]);
 
-  TableRow createTableRow(BuildContext context, List<String> rowEls, List<ListAction> rowActions,{int rowIndex = -1}) {
+    return row;
+  }
+
+  TableRow createTableRow(
+      BuildContext context, List<String> rowEls, List<ListAction> rowActions,
+      {int rowIndex = -1}) {
     var rowDecoration = BoxDecoration(color: Styles()["white"]);
     if (rowIndex > -1) {
       if (KeyUtils.listToKey(rowEls) == currentRowKey) {
@@ -158,47 +157,50 @@ class ActionTableComponent
     }
 
     List<Widget> dataRow = [];
+    
+    dataRow.add(TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: buildInfoBoxIcon(rowEls, context, iconCellWidth: 20)));
 
-    dataRow.add(TableCell(verticalAlignment: TableCellVerticalAlignment.middle, child:  buildInfoBoxIcon(rowEls, context, iconCellWidth: 20))  );
     for (var ci = 0; ci < colNames.length; ci++) {
       if (shouldDisplayColumn(colNames[ci])) {
         dataRow.add(TableCell(
-          verticalAlignment: TableCellVerticalAlignment.middle,
-          child: 
-              SizedBox(
-                  height: 30,
-                  child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        rowEls[ci],
-                        style: Styles()["text"],
-                      )))
-        ));
+            verticalAlignment: TableCellVerticalAlignment.middle,
+            child: SizedBox(
+                height: 30,
+                child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      rowEls[ci],
+                      style: Styles()["text"],
+                    )))));
       }
     }
-    // 
-    
-    var actionWidgets = List<Widget>.empty( growable: true);
-    for( var action in rowActions ){
-      var isEnabled = action.enabledCallback == null || action.enabledCallback!( rowEls );
+    //
+
+    var actionWidgets = List<Widget>.empty(growable: true);
+    for (var action in rowActions) {
+      var isEnabled =
+          action.enabledCallback == null || action.enabledCallback!(rowEls);
       var icon = action.actionIcon;
-      if( !isEnabled ){
+      if (!isEnabled) {
         icon = Icon(icon.icon, color: const Color.fromARGB(255, 200, 200, 200));
-
       }
-      actionWidgets.add(  
-        IconButton(onPressed: (){
-          if( isEnabled ){
-            action.callback!(rowEls);
-          }
-        }, 
-        icon: icon)
-      );
+      actionWidgets.add(IconButton(
+          onPressed: () {
+            if (isEnabled) {
+              action.callback!(rowEls);
+            }
+          },
+          icon: icon));
     }
 
-
-    TableRow row = TableRow(
-        decoration: rowDecoration, children: [ ...dataRow, Row( children: actionWidgets, )]);
+    TableRow row = TableRow(decoration: rowDecoration, children: [
+      ...dataRow,
+      Row(
+        children: actionWidgets,
+      )
+    ]);
 
     return row;
   }
@@ -210,7 +212,6 @@ class ActionTableComponent
     colNames = table.colNames
         .where((colName) => shouldIncludeColumn(colName))
         .toList();
-
 
     List<TableRow> rows = [];
     rows.add(createTableHeader(
@@ -228,10 +229,11 @@ class ActionTableComponent
     for (var si = 0; si < indices.length; si++) {
       var ri = indices[si];
       var rowEls = colNames.map((col) => table.columns[col]![ri]).toList();
-      rows.add(createTableRow(context, rowEls, actions,rowIndex: si));
+      rows.add(createTableRow(context, rowEls, actions, rowIndex: si));
     }
 
-    Map<int, TableColumnWidth> colWidths = infoBoxBuilder == null ? const {} :  {0:const FixedColumnWidth(50) };
+    Map<int, TableColumnWidth> colWidths =
+        infoBoxBuilder == null ? const {0:  FixedColumnWidth(5)} : {0: const FixedColumnWidth(50)};
 
     var tableWidget = Table(
       columnWidths: colWidths,
@@ -252,32 +254,44 @@ class ActionTableComponent
     await super.init();
     await loadTable();
 
-    notifyListeners();
+    // notifyListeners();
   }
-  
-  
 
-  Future<bool> loadTable() async{
-    if( !isInit ){
+  void setComponentState(ComponentState newState) {
+    if (newState != currentState) {
+      currentState = newState;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> loadTable() async {
+    if (!isInit) {
+      setComponentState(ComponentState.busy);
+
       var cacheKey = getCacheKey();
       if (hasCachedValue(cacheKey)) {
         dataTable = getCachedValue(cacheKey);
-      }else{
+      } else {
         dataTable = await dataFetchCallback();
         addToCache(cacheKey, dataTable);
       }
+      setComponentState(ComponentState.idle);
     }
     return true;
   }
 
   @override
   Widget buildContent(BuildContext context) {
-    if( dataTable.nRows == 0 ){
-                    return SizedBox(
-                  height: 100,
-                  child: TercenWaitIndicator()
-                      .waitingMessage(suffixMsg: "  Loading Table"));
-    }else{
+    if (dataTable.nRows == 0) {
+      if (currentState == ComponentState.idle) {
+        return Container();
+      } else {
+        return SizedBox(
+            height: 100,
+            child: TercenWaitIndicator()
+                .waitingMessage(suffixMsg: "  Loading Table"));
+      }
+    } else {
       return buildTable(dataTable, context);
     }
   }
@@ -297,16 +311,14 @@ class ActionTableComponent
     selected.clear();
     dataTable = WebappTable();
   }
-  
+
   @override
   getComponentValue() {
     return '';
   }
-  
+
   @override
   void setComponentValue(value) {
     // TODO: implement setComponentValue
   }
-
-
 }
