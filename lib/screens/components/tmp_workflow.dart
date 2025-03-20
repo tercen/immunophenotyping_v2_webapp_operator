@@ -33,6 +33,7 @@ class WorkflowTaskComponent extends ActionTableComponent {
 
   @override
   Widget buildTable(WebappTable table, BuildContext context) {
+    
     List<Widget> tableRows = [];
 
     for (var workflowTaskId in workflowTasks) {
@@ -163,22 +164,6 @@ class WorkflowTaskComponent extends ActionTableComponent {
         taskDuration.add(ct.duration.toString());
         taskStatus.add(ct.state.kind);
 
-        //   if (ct is sci.RunComputationTask) {
-
-        //   taskStatus.add(""  );
-        //   //   for (var p in ct.environment) {
-        //   //     if (p.key == "workflow.id") {
-        //   //       info += " --- Wkf: ${p.value}";
-        //   //     }
-        //   //     if (p.key == "step.id") {
-        //   //       info += " --- Step: ${p.value}";
-        //   //     }
-        //   //   }
-        //   // }
-        //   // data.add(info);
-        // }else{
-
-        // }
       }
     }
 
@@ -191,7 +176,9 @@ class WorkflowTaskComponent extends ActionTableComponent {
 
   @override
   Future<bool> loadTable() async {
+
     if (!isInit) {
+      print("BUILDING TABLE");
       runningTasks.clear();
       var factory = tercen.ServiceFactory();
 

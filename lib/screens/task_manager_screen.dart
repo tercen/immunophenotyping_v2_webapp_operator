@@ -3,6 +3,7 @@ import 'dart:html' as html;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:immunophenotyping_webapp/screens/components/action_bar_component.dart';
 import 'package:immunophenotyping_webapp/screens/components/immuno_image_list_component.dart';
 import 'package:immunophenotyping_webapp/screens/components/single_select_table_component.dart';
 import 'package:immunophenotyping_webapp/screens/components/tmp_action.dart';
@@ -11,6 +12,7 @@ import 'package:immunophenotyping_webapp/screens/utils/date_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:webapp_components/definitions/list_action.dart';
 import 'package:webapp_components/extra/infobox.dart';
+import 'package:webapp_components/mixins/component_base.dart';
 
 import 'package:webapp_components/screens/screen_base.dart';
 import 'package:webapp_components/components/leaf_selectable_list.dart';
@@ -59,11 +61,22 @@ class _TaskManagerScreenState extends State<TaskManagerScreen>
   void initState() {
     super.initState();
 
-    var workflowInfoBox =
-        InfoBoxBuilder("Workflow Settings", workflowSettingsInfoBox);
+    var toolbar = ActionBarComponent("actionBar", getScreenId(), [
+      ListAction(
+          const Icon(Icons.refresh,
+              color: Color.fromARGB(
+                255,
+                103,
+                153,
+                178,
+              )),
+          reload,
+          buttonLabel: "Refresh",
+          description: "Reload list of workflows")
+    ]);
 
     var taskList = WorkflowTaskComponent(
-        "workflows", getScreenId(), "Running Tasks", fetchTasks, [
+        "tasks", getScreenId(), "Running Tasks", fetchTasks, [
       //#509bb4
       ListAction(
           const Icon(Icons.stop_circle_rounded,
@@ -90,13 +103,22 @@ class _TaskManagerScreenState extends State<TaskManagerScreen>
                   color: Color.fromARGB(255, 103, 153, 178)),
               workflowInfoWithError),
         ],
-        hideColumns: ["Id"]);
+        hideColumns: ["Id"],
+        useCache: false);
 
+    addComponent("default", toolbar);
     addComponent("default", workflowList);
     addComponent("default", taskList);
-    
 
     initScreen(widget.modelLayer as WebAppDataBase);
+  }
+
+  Future<void> reload(List<String> values) async {
+    print("Refreshing");
+    var comp = getComponent("workflows") as ActionTableComponent;
+    comp.reset();
+    comp.init();
+    refresh();
   }
 
   Widget buildTest() {
@@ -183,6 +205,8 @@ class _TaskManagerScreenState extends State<TaskManagerScreen>
     if (printError) {
       var status =
           await widget.modelLayer.workflowService.getWorkflowStatus(workflow);
+      print(status);
+      print(workflow.toJson());
       if (status["error"] != null && status["error"] != "") {
         contentString += "\nERROR INFORMATION";
         contentString += "\n\n";
@@ -198,6 +222,8 @@ class _TaskManagerScreenState extends State<TaskManagerScreen>
   }
 
   Future<void> workflowInfoWithError(List<String> row) async {
+    print("WORKFLOW INFO WITH ERROR");
+    print(row);
     showDialog(
         context: context,
         builder: (dialogContext) {
@@ -245,14 +271,6 @@ class _TaskManagerScreenState extends State<TaskManagerScreen>
                 });
           });
         });
-  }
-
-  Future<void> action1(List<String> row) async {
-    print("Doing action1");
-  }
-
-  Future<void> action2(List<String> row) async {
-    print("Doing action2");
   }
 
   bool action2enabled(List<String> row) {

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immunophenotyping_webapp/screens/components/upload_table_team_component.dart';
 
-
 import 'package:webapp_components/action_components/button_component.dart';
 import 'package:webapp_components/components/input_text_component.dart';
 import 'package:webapp_components/components/select_from_list.dart';
@@ -20,7 +19,6 @@ import 'package:webapp_workflow/runners/workflow_runner.dart';
 import 'package:sci_tercen_client/sci_client_service_factory.dart' as tercen;
 
 
-//FIXME Upload is not detecting & parsing sample annotation file correctly
 class UploadScreen extends StatefulWidget {
   final WebAppData modelLayer;
   const UploadScreen(this.modelLayer, {super.key});
@@ -107,8 +105,6 @@ class _UploadScreenState extends State<UploadScreen>
     initScreen(widget.modelLayer as WebAppDataBase);
   }
 
-  Future<void> initComponent() async {}
-
   Future<List<sci.ProjectDocument>> fetchFcsFiles() async {
     var docs = widget.modelLayer.projectService.getProjectFiles();
 
@@ -137,8 +133,7 @@ class _UploadScreenState extends State<UploadScreen>
   }
 
   String getFileOwner() {
-    var teamComponent =
-        getComponent("team") as SelectFromListComponent;
+    var teamComponent = getComponent("team") as SelectFromListComponent;
     return teamComponent.getComponentValue();
   }
 
@@ -153,27 +148,25 @@ class _UploadScreenState extends State<UploadScreen>
 
     closeLog();
 
-    widget.modelLayer.app.navMenu.selectScreen("Configuration" );
+    widget.modelLayer.app.navMenu.selectScreen("Configuration");
   }
 
   Future<void> _createLoadProject() async {
     log("Creating/Loading Project", dialogTitle: "Create Project");
-    var teamComponent =
-        getComponent("team") as SelectFromListComponent;
+    var teamComponent = getComponent("team") as SelectFromListComponent;
     var selectedTeam = teamComponent.getComponentValue();
 
-    var projectComponent =
-        getComponent("project") as InputTextComponent;
+    var projectComponent = getComponent("project") as InputTextComponent;
     var projectName = projectComponent.getComponentValue();
 
-    if( projectName != widget.modelLayer.app.projectName ){
+    if (projectName != widget.modelLayer.app.projectName) {
       await widget.modelLayer
-        .createOrLoadProject("", projectName, selectedTeam);
+          .createOrLoadProject("", projectName, selectedTeam);
       await modelLayer.reloadProjectFiles();
     }
   }
 
-  String removeSuffix(String name){
+  String removeSuffix(String name) {
     var parts = name.split(".");
     parts.removeLast();
     return parts.join(".");
@@ -196,24 +189,27 @@ class _UploadScreenState extends State<UploadScreen>
         getComponent("uploadAnnotation") as UploadTableTeamComponent;
 
     log("Reading FCS", dialogTitle: "Create Project");
-    WorkflowRunner runner = WorkflowRunner(widget.modelLayer.app.projectId,
-        widget.modelLayer.app.teamname, widget.modelLayer.workflowService.getWorkflow("immuno"));
+    WorkflowRunner runner = WorkflowRunner(
+        widget.modelLayer.app.projectId,
+        widget.modelLayer.app.teamname,
+        widget.modelLayer.workflowService.getWorkflow("immuno"));
 
     runner.addDocument(
         widget.modelLayer.settingsService.getStepId("immuno", "fcsTable"),
         upFcsComp.getComponentValue().first);
     runner.addTableDocument(
-        widget.modelLayer.settingsService.getStepId("immuno", "annotationTable"),
+        widget.modelLayer.settingsService
+            .getStepId("immuno", "annotationTable"),
         upAnnotComp.getComponentValue().first);
 
-    var folderName = "${removeSuffix(upFcsComp.uploadedFilenames.first)}_${removeSuffix(upAnnotComp.uploadedFilenames.first)}";
+    var folderName =
+        "${removeSuffix(upFcsComp.uploadedFilenames.first)}_${removeSuffix(upAnnotComp.uploadedFilenames.first)}";
     var folder = widget.modelLayer.projectService.getFolder(folderName);
-    
-    
+
     //If folder exists, pair of file has been run
-    if( folder == null){
+    if (folder == null) {
       runner.setFolderName(folderName);
-      
+
       runner.addPostRun(widget.modelLayer.reloadProjectFiles);
       runner.addPostRun(removeTestsFolder);
 
@@ -224,29 +220,25 @@ class _UploadScreenState extends State<UploadScreen>
 
       runner.setNewWorkflowName("FcsLoaded_Template");
 
-      
-
-      widget.modelLayer.workflow = await runner.doRunStep(
-        context, widget.modelLayer.settingsService.getStepId("immuno", "readFcs"));
-    }else{
+      widget.modelLayer.workflow = await runner.doRunStep(context,
+          widget.modelLayer.settingsService.getStepId("immuno", "readFcs"));
+    } else {
       Fluttertoast.showToast(
-        msg: "Files successfully loaded",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.CENTER,
-        webPosition: "center",
-        webBgColor: "linear-gradient(to bottom, #ffffff, #eeeeaff)",
-        timeInSecForIosWeb: 2,
-        backgroundColor: Colors.lightBlue[100],
-        textColor: Styles()["black"],
-        fontSize: 16.0
-    );
-
+          msg: "Files successfully loaded",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.CENTER,
+          webPosition: "center",
+          webBgColor: "linear-gradient(to bottom, #ffffff, #eeeeaff)",
+          timeInSecForIosWeb: 2,
+          backgroundColor: Colors.lightBlue[100],
+          textColor: Styles()["black"],
+          fontSize: 16.0);
     }
   }
 
   Future<void> removeTestsFolder() async {
     var folder = widget.modelLayer.projectService.getFolder("workflow_tests");
-    if(folder != null){
+    if (folder != null) {
       var factory = tercen.ServiceFactory();
       await factory.folderService.delete(folder.id, folder.rev);
     }
@@ -264,7 +256,7 @@ class _UploadScreenState extends State<UploadScreen>
             return buildComponents(context);
           } else {
             (getComponent("team")! as SelectFromListComponent)
-            .setOptions(["Loading user list..."]);
+                .setOptions(["Loading user list..."]);
             return buildComponents(context);
           }
         });

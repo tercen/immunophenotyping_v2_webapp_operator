@@ -32,7 +32,7 @@ class ActionTableComponent
   final List<ListAction> actions;
   final String valueSeparator = "|@|";
   ComponentState currentState = ComponentState.idle;
-
+  final bool useCache;
   String sortingCol = "";
   String sortDirection = "";
 
@@ -45,11 +45,12 @@ class ActionTableComponent
 
   ActionTableComponent(
       id, groupId, componentLabel, this.dataFetchCallback, this.actions,
-      {this.excludeColumns, this.hideColumns, InfoBoxBuilder? infoBoxBuilder}) {
+      {this.excludeColumns, this.hideColumns, InfoBoxBuilder? infoBoxBuilder, this.useCache = true}) {
     super.id = id;
     super.groupId = groupId;
     super.componentLabel = componentLabel;
     super.infoBoxBuilder = infoBoxBuilder;
+    
   }
 
   void rotateSortingDirection() {
@@ -269,11 +270,14 @@ class ActionTableComponent
       setComponentState(ComponentState.busy);
 
       var cacheKey = getCacheKey();
-      if (hasCachedValue(cacheKey)) {
+      if (hasCachedValue(cacheKey) && useCache) {
         dataTable = getCachedValue(cacheKey);
       } else {
         dataTable = await dataFetchCallback();
-        addToCache(cacheKey, dataTable);
+        if( useCache){
+          addToCache(cacheKey, dataTable);
+        }
+        
       }
       setComponentState(ComponentState.idle);
     }
@@ -308,6 +312,7 @@ class ActionTableComponent
 
   @override
   void reset() {
+    isInit = false;
     selected.clear();
     dataTable = WebappTable();
   }

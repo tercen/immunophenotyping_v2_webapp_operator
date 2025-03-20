@@ -1,34 +1,26 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immunophenotyping_webapp/screens/components/single_select_table_component.dart';
 import 'package:immunophenotyping_webapp/screens/components/temp2.dart';
 import 'package:immunophenotyping_webapp/screens/utils/date_utils.dart';
-import 'package:immunophenotyping_webapp/service/settings.dart';
-import 'package:intl/intl.dart';
 import 'package:sci_tercen_client/sci_client.dart' as sci;
 import 'package:webapp_components/extra/settings_converter.dart';
 import 'package:webapp_components/mixins/component_base.dart';
 
 import 'package:webapp_components/screens/screen_base.dart';
 import 'package:webapp_components/components/input_text_component.dart';
-import 'package:webapp_components/components/multi_check_fetch.dart';
 import 'package:webapp_components/validators/numeric_validator.dart';
 import 'package:webapp_components/validators/range_validator.dart';
-import 'package:webapp_model/id_element.dart';
+
 import 'package:webapp_model/webapp_data_base.dart';
 import 'package:immunophenotyping_webapp/webapp_data.dart';
 import 'package:webapp_model/webapp_table.dart';
 import 'package:webapp_ui_commons/mixin/progress_log.dart';
-import 'package:webapp_components/extra/settings_loader.dart';
 import 'package:webapp_components/action_components/button_component.dart';
 import 'package:webapp_ui_commons/styles/styles.dart';
 import 'package:webapp_workflow/runners/workflow_queu_runner.dart';
 
-import 'package:webapp_model/id_element_table.dart';
-
 import 'package:sci_tercen_client/sci_client_service_factory.dart' as tercen;
-import 'package:webapp_workflow/runners/workflow_runner.dart';
 
 import 'utils/setting_component_generator.dart';
 
@@ -42,8 +34,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen>
     with ScreenBase, ProgressDialog {
-  
-  
   @override
   String getScreenId() {
     return "SettingsScreen";
@@ -90,52 +80,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     var defaultSettingsComponents =
         compGenerator.getScreenSettings(getScreenId(), widget.modelLayer);
 
-    if (widget.modelLayer.settingsService.hasFilter(getScreenId())) {
-      var filters = widget.modelLayer.settingsService.settingsFilters.filters
-          .where((filter) => filter.screen == getScreenId())
-          .toList();
-
-      defaultSettingsComponents = defaultSettingsComponents.where((comp) {
-        if (comp is ComponentBase) {
-          var settingName =
-              (comp as ComponentBase).getMeta("setting.name")!.value;
-          var stepName = (comp as ComponentBase).getMeta("step.name")!.value;
-          var stepId = (comp as ComponentBase).getMeta("step.id")!.value;
-          // var screenName = (comp as ComponentBase).getMeta("screen.name")!.value;
-
-          var include = true;
-          for (var filter in filters) {
-            if (filter.type == "include") {
-              if (filter.settingNames != null) {
-                include = include && filter.settingNames!.contains(settingName);
-              }
-              if (filter.stepId != null) {
-                include = include && filter.stepId!.contains(stepId);
-              }
-              if (filter.stepName != null) {
-                include = include && filter.stepName!.contains(stepName);
-              }
-            }
-            if (filter.type == "exclude") {
-              if (filter.settingNames != null) {
-                include =
-                    include && !filter.settingNames!.contains(settingName);
-              }
-              if (filter.stepId != null) {
-                include = include && !filter.stepId!.contains(stepId);
-              }
-              if (filter.stepName != null) {
-                include = include && !filter.stepName!.contains(stepName);
-              }
-            }
-          }
-          return include;
-        } else {
-          return false;
-        }
-      }).toList();
-    }
-
     var runIdentifierComponent =
         InputTextComponent("runId", getScreenId(), "Run Identifier");
 
@@ -150,22 +94,16 @@ class _SettingsScreenState extends State<SettingsScreen>
 
     addHeading("default", "Settings");
 
-    int i = 0;
     for (var comp in defaultSettingsComponents) {
       var block = (comp as ComponentBase).getMeta("step.name") == null
           ? "Settings"
           : (comp as ComponentBase).getMeta("step.name")!.value;
       addComponent(block, comp, blockType: ComponentBlockType.collapsed);
-      i++;
-      if (i == 10) {
-        break;
-      }
     }
-    
 
     var runAnalysisBtn = ButtonActionComponent(
         "createProject", "Run Analysis", runAnalysis,
-        blocking: false);
+        blocking: false, parents: [markers, workflowList]);
     addActionComponent(runAnalysisBtn);
 
     initScreen(widget.modelLayer as WebAppDataBase);
@@ -176,7 +114,9 @@ class _SettingsScreenState extends State<SettingsScreen>
         pd.getMeta("immuno.readFcs.run") == "true";
   }
 
+
   Future<WebappTable> fetchMarkers() async {
+
     var workflowComponent =
         getComponent("workflowFolders") as SingleSelectTableComponent;
 
@@ -195,14 +135,13 @@ class _SettingsScreenState extends State<SettingsScreen>
                   500,
                   "Unexpected file structure",
                   "Workflow containing readFcs execution could not be located"));
-      res = await widget.modelLayer.fetchMarkers( wkfDoc.id );
+      res = await widget.modelLayer.fetchMarkers(wkfDoc.id);
     }
-  
+
     return res; //await widget.modelLayer.fetchMarkers();
   }
 
   Future<WebappTable> fetchWorkflows() async {
-    // print("FETCHING workflows for project ${widget.modelLayer.app.projectId}");
     var res = WebappTable();
     var dataFolders = widget.modelLayer
         .getProjectFiles()
@@ -220,10 +159,8 @@ class _SettingsScreenState extends State<SettingsScreen>
     return res;
   }
 
-  
-
   Future<void> runAnalysis() async {
-      Fluttertoast.showToast(
+    Fluttertoast.showToast(
         msg: "Workflow is being prepared",
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.BOTTOM_LEFT,
@@ -232,71 +169,85 @@ class _SettingsScreenState extends State<SettingsScreen>
         timeInSecForIosWeb: 2,
         backgroundColor: Colors.lightBlue[100],
         textColor: Styles()["black"],
-        fontSize: 16.0
-    );
-
+        fontSize: 16.0);
 
     var factory = tercen.ServiceFactory();
 
-    var runWorkflow = await factory.workflowService.copyApp(widget.modelLayer.workflow.id, widget.modelLayer.app.projectId);
+    //Copy the template with the 'Read FCS' step completed
+    var runWorkflow = await factory.workflowService.copyApp(
+        widget.modelLayer.workflow.id, widget.modelLayer.app.projectId);
 
     runWorkflow.folderId = widget.modelLayer.workflow.folderId;
     runWorkflow = await factory.workflowService.create(runWorkflow);
 
-    var runner = WorkflowQueuRunner(
-        widget.modelLayer.app.projectId,
-        widget.modelLayer.app.teamname,
-        runWorkflow);
+    var runner = WorkflowQueuRunner(widget.modelLayer.app.projectId,
+        widget.modelLayer.app.teamname, runWorkflow);
+
+    runner.addWorkflowMeta("immuno.readFcs.run", "false");
 
     runner.setFolder(runWorkflow.folderId);
 
-    var runIdComp = getComponent("runId", groupId: getScreenId()) as InputTextComponent;
-    if( runIdComp.isFulfilled() ){
+    var runIdComp =
+        getComponent("runId", groupId: getScreenId()) as InputTextComponent;
+
+    if (runIdComp.isFulfilled()) {
       runner.setNewWorkflowName(runIdComp.getComponentValue());
     }
+
+    var seedComp =
+        getComponent("seed", groupId: getScreenId()) as InputTextComponent;
+    if( seedComp.getComponentValue() != ""){
+      runner.addSettingByName("seed", seedComp.getComponentValue());
+      runner.addWorkflowMeta("setting.seed", seedComp.getComponentValue());
+    }
     
-    var seedComp = getComponent("seed", groupId: getScreenId()) as InputTextComponent;
-    runner.addSettingByName("seed", seedComp.getComponentValue());
-    runner.addWorkflowMeta("setting.seed",  seedComp.getComponentValue() );
 
-    var blocks = componentBlocks.keys.where((block) => block != "default" );
-    for( var block in blocks){
-          var settingsComps = getComponentsPerBlock(block);
 
-    for (var comp in settingsComps) {
-      
-      var setting = SettingsConverter.settingComponentToStepSetting(comp);
-      if (setting != null) {
-        if( setting.value != ""){
-          runner.addWorkflowMeta("setting.${setting.settingName}",  setting.value );
-          runner.addSetting(setting);
+    var blocks = componentBlocks.keys.where((block) => block != "default");
+    for (var block in blocks) {
+      var settingsComps = getComponentsPerBlock(block);
+
+      for (var comp in settingsComps) {
+        var setting = SettingsConverter.settingComponentToStepSetting(comp);
+        if (setting != null) {
+          if (setting.value != "") {
+            runner.addWorkflowMeta(
+                "setting.${setting.settingName}", setting.value);
+            runner.addSetting(setting);
+          }
         }
       }
     }
-    }
-
 
     var markers = getComponent("markerComp") as MultiCheckComponentFetch;
     var selectedMarkers = markers.getComponentValueAsTable()["MarkerId"];
     runner.addWorkflowMeta("selected.markers", selectedMarkers.join("|@|"));
 
+    var downComp =
+        getComponent("down", groupId: getScreenId()) as InputTextComponent;
 
-    var downComp = getComponent("down", groupId: getScreenId()) as InputTextComponent;
-    runner.changeFilterValue("Downsampling Percentage", "downsample.random_percentage", downComp.getComponentValue());
-    runner.addWorkflowMeta("setting.downsampling",  downComp.getComponentValue() );
+    if( downComp.getComponentValue() != ""){
+      runner.changeFilterValue("Downsampling Percentage",
+        "downsample.random_percentage", downComp.getComponentValue());
+      runner.addWorkflowMeta(
+          "setting.downsampling", downComp.getComponentValue());
+    }
+    
 
     for (var marker in selectedMarkers) {
       runner.addAndFilter(
-        "Channel Selection",
-          widget.modelLayer.settingsService.getStepId("immuno", "channelAndDownsample"), [
-        "channel_name",
-      ], [
-        [marker]
-      ]);
+          "Channel Selection",
+          widget.modelLayer.settingsService
+              .getStepId("immuno", "channelAndDownsample"),
+          [
+            "channel_name",
+          ],
+          [
+            [marker]
+          ]);
     }
 
     runner.addWorkflowMeta("immuno.workflow", "true");
-    
 
     runner.addPostRun(widget.modelLayer.reloadProjectFiles);
     runner.doRun(context);

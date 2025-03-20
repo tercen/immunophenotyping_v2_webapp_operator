@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immunophenotyping_webapp/model/qc_channels.dart';
 import 'package:json_string/json_string.dart';
-import 'package:sci_tercen_client/sci_client_base.dart';
+import 'package:sci_tercen_client/sci_client_base.dart' as sci;
 import 'package:sci_tercen_client/sci_client_service_factory.dart' as tercen;
 import 'package:sci_tercen_model/sci_model.dart' as sci;
 import 'package:webapp_model/id_element.dart';
@@ -27,7 +27,6 @@ class FcsService with DataCache {
     var factory = tercen.ServiceFactory();
     List<String> optionIds = [];
     List<String> optionDescs = [];
-    // var qcChannels =  qcChannels;
 
     for (var stp in workflow.steps) {
       if (stp.id == readFcsStepId) {
@@ -86,22 +85,5 @@ class FcsService with DataCache {
     qcChObject = QcChannels.fromJson(jsonString.decodedValueAsMap);
   }
 
-  // Future<List<String>> getQcChannels() async {
-  //   var qcCacheKey = "qcChannels";
 
-  //   if (hasCachedValue(qcCacheKey)) {
-  //     return getCachedValue(qcCacheKey);
-  //   } else {
-  //     var qcChannelsJson =
-  //         await rootBundle.loadString("assets/qc_channels.json");
-
-  //     final jsonString = JsonString(qcChannelsJson);
-  //     final qcChannelsMap = jsonString.decodedValueAsMap;
-
-  //     var channelList = (qcChannelsMap["channels"] as List).map((e) => e as String).toList();
-  //     addToCache(qcCacheKey, channelList );
-
-  //     return getCachedValue(qcCacheKey);
-  //   }
-  // }
 }
