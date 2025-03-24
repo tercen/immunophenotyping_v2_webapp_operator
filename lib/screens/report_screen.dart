@@ -3,8 +3,8 @@ import 'dart:html' as html;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:immunophenotyping_webapp/screens/components/immuno_image_list_component.dart';
-import 'package:immunophenotyping_webapp/screens/components/single_select_table_component.dart';
-import 'package:immunophenotyping_webapp/screens/utils/date_utils.dart';
+import 'package:webapp_components/components/single_select_table_component.dart';
+
 import 'package:webapp_components/extra/infobox.dart';
 
 import 'package:webapp_components/screens/screen_base.dart';
@@ -16,6 +16,7 @@ import 'package:webapp_ui_commons/mixin/progress_log.dart';
 import 'package:webapp_ui_commons/styles/styles.dart';
 import 'package:sci_tercen_model/sci_model.dart' as sci;
 import 'package:sci_tercen_client/sci_client_service_factory.dart' as tercen;
+import 'package:webapp_utils/functions/formatter_utils.dart';
 
 class ReportScreen extends StatefulWidget {
   final WebAppData modelLayer;

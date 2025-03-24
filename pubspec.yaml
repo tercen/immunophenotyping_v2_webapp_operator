@@ -5,7 +5,7 @@ description: "."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 
-version: 0.2.0-rc2
+version: 0.2.0
 
 environment:
   sdk: '>=3.4.3 <4.0.0'
@@ -33,31 +33,31 @@ dependencies:
   
   webapp_utils:
     git:
-      ref: v010
+      ref: 0.1.0
       url: git@github.com:tercen/webapp_lib
       path: webapp_utils
 
   webapp_ui_commons:
     git:
-      ref: v010
+      ref: 0.1.0
       url: git@github.com:tercen/webapp_lib
       path: webapp_ui_commons
 
   webapp_model:
     git:
-      ref: v010
+      ref: 0.1.0
       url: git@github.com:tercen/webapp_lib
       path: webapp_model
 
   webapp_components:
     git:
-      ref: v010
+      ref: 0.1.0
       url: git@github.com:tercen/webapp_lib
       path: webapp_components
 
   webapp_workflow:
     git:
-      ref: v010
+      ref: 0.1.0
       url: git@github.com:tercen/webapp_lib
       path: webapp_workflow
 

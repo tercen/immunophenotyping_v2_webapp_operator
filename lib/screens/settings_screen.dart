@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:immunophenotyping_webapp/screens/components/single_select_table_component.dart';
-import 'package:immunophenotyping_webapp/screens/components/temp2.dart';
-import 'package:immunophenotyping_webapp/screens/utils/date_utils.dart';
+
+
+
 import 'package:sci_tercen_client/sci_client.dart' as sci;
+import 'package:webapp_components/components/multi_check_fetch.dart';
+import 'package:webapp_components/components/single_select_table_component.dart';
 import 'package:webapp_components/extra/settings_converter.dart';
 import 'package:webapp_components/mixins/component_base.dart';
 
@@ -17,7 +18,7 @@ import 'package:immunophenotyping_webapp/webapp_data.dart';
 import 'package:webapp_model/webapp_table.dart';
 import 'package:webapp_ui_commons/mixin/progress_log.dart';
 import 'package:webapp_components/action_components/button_component.dart';
-import 'package:webapp_ui_commons/styles/styles.dart';
+import 'package:webapp_utils/functions/formatter_utils.dart';
 import 'package:webapp_workflow/runners/workflow_queu_runner.dart';
 
 import 'package:sci_tercen_client/sci_client_service_factory.dart' as tercen;
@@ -160,16 +161,9 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 
   Future<void> runAnalysis() async {
-    Fluttertoast.showToast(
-        msg: "Workflow is being prepared",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM_LEFT,
-        webPosition: "left",
-        webBgColor: "linear-gradient(to bottom, #aaaaff, #eeeeaff)",
-        timeInSecForIosWeb: 2,
-        backgroundColor: Colors.lightBlue[100],
-        textColor: Styles()["black"],
-        fontSize: 16.0);
+    openDialog(context);
+
+    log("Preparing workflow task for execution.", dialogTitle: "Task Runner");
 
     var factory = tercen.ServiceFactory();
 
@@ -220,7 +214,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
 
     var markers = getComponent("markerComp") as MultiCheckComponentFetch;
-    var selectedMarkers = markers.getComponentValueAsTable()["MarkerId"];
+    var selectedMarkers = markers.getComponentValueAsTable()["MarkerDescription"];
     runner.addWorkflowMeta("selected.markers", selectedMarkers.join("|@|"));
 
     var downComp =
@@ -251,6 +245,11 @@ class _SettingsScreenState extends State<SettingsScreen>
 
     runner.addPostRun(widget.modelLayer.reloadProjectFiles);
     runner.doRun(context);
+    log("Done", dialogTitle: "Task Runner");
+
+    await Future.delayed(Duration(milliseconds: 300), (){
+      closeLog();
+    });
   }
 
   @override

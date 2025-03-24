@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
+
 import 'dart:io';
 
 import 'package:immunophenotyping_webapp/globals.dart' as globals;
@@ -16,13 +16,13 @@ import 'package:immunophenotyping_webapp/screens/upload_screen.dart';
 import 'package:immunophenotyping_webapp/screens/settings_screen.dart';
 import 'package:immunophenotyping_webapp/webapp.dart';
 import 'package:immunophenotyping_webapp/webapp_data.dart';
-import 'package:webapp_model/model/view_state.dart';
+
 import 'package:webapp_ui_commons/mixin/progress_log.dart';
 import 'package:webapp_ui_commons/styles/default_style.dart';
 import 'package:webapp_ui_commons/styles/styles.dart';
 
 import 'package:sci_tercen_client/sci_client.dart' as sci;
-import 'package:sci_tercen_client/sci_client_service_factory.dart' as tercen;
+
 final navigatorKey = GlobalKey<NavigatorState>();
 
 //Prevents multiple error screens overwriting one another
@@ -149,7 +149,7 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
       app.addNavigationSpace();
 
       app.addNavigationPage(
-          "Task Manager", TaskManagerScreen(appData, key: app.getKey("Task Manager")));
+          "Task Manager", ImmunoTaskManagerScreen(appData, key: app.getKey("Task Manager")));
 
       appData.addListener(refresh);
       app.navMenu.addListener(() => refresh());

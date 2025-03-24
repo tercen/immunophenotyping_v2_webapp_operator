@@ -1,16 +1,13 @@
-import 'dart:convert';
-
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immunophenotyping_webapp/model/qc_channels.dart';
 import 'package:json_string/json_string.dart';
-import 'package:sci_tercen_client/sci_client_base.dart' as sci;
+
 import 'package:sci_tercen_client/sci_client_service_factory.dart' as tercen;
 import 'package:sci_tercen_model/sci_model.dart' as sci;
-import 'package:webapp_model/id_element.dart';
-import 'package:webapp_model/id_element_table.dart';
+
 import 'package:webapp_model/webapp_table.dart';
-import 'package:webapp_utils/functions/workflow_utils.dart';
+import 'package:webapp_utils/functions/formatter_utils.dart';
+
 import 'package:webapp_utils/mixin/data_cache.dart';
 import 'package:webapp_utils/services/workflow_data_service.dart';
 
@@ -85,5 +82,71 @@ class FcsService with DataCache {
     qcChObject = QcChannels.fromJson(jsonString.decodedValueAsMap);
   }
 
+  Future<WebappTable> fetchImmunoWorkflows(String projectId) async {
+    var key = projectId;
+    if (hasCachedValue(key)) {
+      return getCachedValue(key);
+    } else {
+      var workflowService = WorkflowDataService();
+      var workflows = (await workflowService.fetchWorkflowsRemote(projectId))
+          .where((doc) => doc.hasMeta("immuno.workflow"))
+          .where((doc) => doc.getMeta("immuno.workflow")! == "true")
+          .toList();
 
+      var res = WebappTable();
+
+      List<String> status = [];
+      List<String> error = [];
+
+      for (var w in workflows) {
+        // var sw = await workflowService.getWorkflowStatus(w);
+        var sw = await getImmunoWorkflowStatus(w);
+
+        status.add(sw["status"]!);
+        error.add(sw["error"]!);
+      }
+
+      res.addColumn("Id", data: workflows.map((w) => w.id).toList());
+      res.addColumn("Name", data: workflows.map((w) => w.name).toList());
+      res.addColumn("Status", data: status);
+      // res.addColumn("Error", data: error);
+      res.addColumn("Last Update",
+          data: workflows
+              .map((w) => DateFormatter.formatShort(w.lastModifiedDate))
+              .toList());
+
+      return res;
+    }
+  }
+
+  Future<Map<String, String>> getImmunoWorkflowStatus(
+      sci.Workflow workflow) async {
+    var meta = workflow.meta;
+    var results = {"status": "", "error": "", "finished": "true"};
+    results["status"] = "Unknown";
+
+    if (workflow.steps.any((e) => e.state.taskState is sci.FailedState)) {
+      results["status"] = "Failed";
+      results["error"] = meta
+          .firstWhere((e) => e.key.contains("run.error"),
+              orElse: () => sci.Pair.from("", ""))
+          .value;
+      if (meta.any((e) => e.key == "run.error.reason")) {
+        var reason = meta.firstWhere((e) => e.key == "run.error.reason").value;
+        results["error"] = reason != "" ? reason : "No details provided";
+      } else {
+        results["error"] =
+            "${results["error"]}\n\nNo Error Details were Provided.";
+      }
+    } else if (!workflow.steps
+        .whereType<sci.DataStep>()
+        .map((step) => step.state.taskState is sci.DoneState)
+        .any((state) => state == false)) {
+      results["status"] = "Finished";
+    } else {
+      results["status"] = "Running";
+    }
+
+    return results;
+  }
 }

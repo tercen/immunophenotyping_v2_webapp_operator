@@ -2,15 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:immunophenotyping_webapp/screens/components/upload_table_team_component.dart';
+
 
 import 'package:webapp_components/action_components/button_component.dart';
 import 'package:webapp_components/components/input_text_component.dart';
 import 'package:webapp_components/components/select_from_list.dart';
+import 'package:webapp_components/components/upload_file_team_component.dart';
+import 'package:webapp_components/components/upload_table_team_component.dart';
 import 'package:webapp_components/screens/screen_base.dart';
 import 'package:webapp_components/validators/null_validator.dart';
 import 'package:webapp_model/webapp_data_base.dart';
-import 'package:immunophenotyping_webapp/screens/components/upload_file_team_component.dart';
 import 'package:immunophenotyping_webapp/webapp_data.dart';
 import 'package:webapp_ui_commons/mixin/progress_log.dart';
 import 'package:sci_tercen_client/sci_client.dart' as sci;
