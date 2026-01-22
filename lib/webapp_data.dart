@@ -15,7 +15,7 @@ class WebAppData extends WebAppDataBase {
   FcsService fcsService = FcsService();
 
   var workflow = sci.Workflow();
-
+  // late sci.PatchRecord rec;
   Future<WebappTable> fetchMarkers(String workflowId) async {
     workflow = await workflowService.fetchWorkflow(workflowId);
     return await fcsService.fetchMarkers(

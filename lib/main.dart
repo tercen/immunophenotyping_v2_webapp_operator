@@ -28,41 +28,45 @@ final navigatorKey = GlobalKey<NavigatorState>();
 //Prevents multiple error screens overwriting one another
 // bool isShowingGlobalError = false;
 void main() async {
-  runZonedGuarded(
-    () async {
-      WidgetsFlutterBinding.ensureInitialized();
-
-      runApp(MaterialApp(
-        home: const KumoAnalysisApp(),
-        navigatorKey: navigatorKey,
-      ));
-    },
-    (error, stackTrace) {
-      if (navigatorKey.currentContext != null) {
-        if (error is sci.ServiceError ) {
-          print(error);
-          print(stackTrace);
-          ErrorScreen errorHandler = ErrorScreen(
-            errorDetails: FlutterErrorDetails(exception: error),
-          );
-
-          globals.States.hasError = true;
-          showDialog(
-              barrierDismissible: false,
-              context: navigatorKey.currentContext!,
-              builder: (context) => errorHandler.build(context));
-
-        }else{
-          print(error);
-          print(stackTrace);
-        }
-      } else {
-        print("Context or null check error");
-        print(stackTrace);
-        exit(1);
-      }
-    },
-  );
+  runApp(MaterialApp(
+    home: const KumoAnalysisApp(),
+    navigatorKey: navigatorKey,
+  ));
+  // runZonedGuarded(
+  //   () async {
+  //     WidgetsFlutterBinding.ensureInitialized();
+  //
+  //     runApp(MaterialApp(
+  //       home: const KumoAnalysisApp(),
+  //       navigatorKey: navigatorKey,
+  //     ));
+  //   },
+  //   (error, stackTrace) {
+  //     if (navigatorKey.currentContext != null) {
+  //       if (error is sci.ServiceError ) {
+  //         print(error);
+  //         print(stackTrace);
+  //         ErrorScreen errorHandler = ErrorScreen(
+  //           errorDetails: FlutterErrorDetails(exception: error),
+  //         );
+  //
+  //         globals.States.hasError = true;
+  //         showDialog(
+  //             barrierDismissible: false,
+  //             context: navigatorKey.currentContext!,
+  //             builder: (context) => errorHandler.build(context));
+  //
+  //       }else{
+  //         print(error);
+  //         print(stackTrace);
+  //       }
+  //     } else {
+  //       print("Context or null check error");
+  //       print(stackTrace);
+  //       exit(1);
+  //     }
+  //   },
+  // );
 }
 
 class KumoAnalysisApp extends StatelessWidget {

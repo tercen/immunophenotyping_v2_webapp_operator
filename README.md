@@ -1,1 +1,10 @@
 # webapp_template
+
+
+flutter packages upgrade && flutter packages get && flutter run  --web-hostname 127.0.0.1 --web-port 12888 -d web-server --dart-define PROJECT_ID=cc72876a33146a3f15e5a4be9a000d2a
+flutter build web --profile --dart-define=Dart2jsOptimization=O0
+
+flutter packages upgrade && flutter packages get
+
+dart run build_runner build
+

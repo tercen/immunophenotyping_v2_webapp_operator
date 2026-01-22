@@ -33,40 +33,47 @@ dependencies:
   
   webapp_utils:
     git:
-      ref: 0.1.0
+#    path: ../webapp_lib/webapp_utils
+      ref: 0.1.1
       url: git@github.com:tercen/webapp_lib
       path: webapp_utils
 
   webapp_ui_commons:
+#    path: ../webapp_lib/webapp_ui_commons
     git:
-      ref: 0.1.0
+      ref: 0.1.1
       url: git@github.com:tercen/webapp_lib
       path: webapp_ui_commons
 
   webapp_model:
+#    path: ../webapp_lib/webapp_model
     git:
-      ref: 0.1.0
+      ref: 0.1.1
       url: git@github.com:tercen/webapp_lib
       path: webapp_model
 
   webapp_components:
+#    path: ../webapp_lib/webapp_components
     git:
-      ref: 0.1.0
+      ref: 0.1.1
       url: git@github.com:tercen/webapp_lib
       path: webapp_components
 
   webapp_workflow:
+#    path: ../webapp_lib/webapp_workflow
     git:
-      ref: 0.1.0
+      ref: 0.1.1
       url: git@github.com:tercen/webapp_lib
       path: webapp_workflow
 
-  sci_tercen_client:
-    git:
-      ref: 1.3.1
-      url: https://github.com/tercen/sci_tercen_client
-      path: sci_tercen_client
-  
+#  sci_tercen_client:
+#    git:
+#      ref: 1.8.0
+#      url: git@github.com:tercen/sci_tercen_client
+#      path: sci_tercen_client
+#    path: ../sci_tercen_client/sci_tercen_client
+
+#
 
 
 
@@ -98,6 +105,6 @@ flutter:
     - assets/qc_channels.json
 
   fonts:
-    - family: RobotMono
+    - family: RobotoMono
       fonts:
         - asset: fonts/RobotoMono-Regular.ttf
