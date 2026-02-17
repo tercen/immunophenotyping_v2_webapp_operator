@@ -31,6 +31,11 @@ migrate_working_dir/
 .pub/
 # /build/
 
+# Local working directories
+.claude/
+_issues/
+_local/
+
 # Symbolication related
 app.*.symbols
 
