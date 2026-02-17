@@ -1,73 +1,72 @@
-import 'dart:async';
-
-import 'dart:io';
-
-import 'package:immunophenotyping_webapp/globals.dart' as globals;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+
+import 'package:immunophenotyping_webapp/globals.dart' as globals;
 import 'package:immunophenotyping_webapp/screens/report_screen.dart';
 import 'package:immunophenotyping_webapp/screens/task_manager_screen.dart';
-import 'package:json_string/json_string.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-
-import 'package:url_launcher/url_launcher.dart';
 import 'package:immunophenotyping_webapp/screens/upload_screen.dart';
 import 'package:immunophenotyping_webapp/screens/settings_screen.dart';
 import 'package:immunophenotyping_webapp/webapp.dart';
 import 'package:immunophenotyping_webapp/webapp_data.dart';
 
+import 'package:json_string/json_string.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:webapp_ui_commons/mixin/progress_log.dart';
 import 'package:webapp_ui_commons/styles/default_style.dart';
 import 'package:webapp_ui_commons/styles/styles.dart';
 
-import 'package:sci_tercen_client/sci_client.dart' as sci;
+import 'core/theme/app_theme.dart';
+import 'presentation/providers/navigation_provider.dart';
+import 'presentation/providers/theme_provider.dart';
+import 'presentation/screens/home_screen.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-//Prevents multiple error screens overwriting one another
-// bool isShowingGlobalError = false;
-void main() async {
-  runApp(MaterialApp(
-    home: const KumoAnalysisApp(),
-    navigatorKey: navigatorKey,
-  ));
-  // runZonedGuarded(
-  //   () async {
-  //     WidgetsFlutterBinding.ensureInitialized();
-  //
-  //     runApp(MaterialApp(
-  //       home: const KumoAnalysisApp(),
-  //       navigatorKey: navigatorKey,
-  //     ));
-  //   },
-  //   (error, stackTrace) {
-  //     if (navigatorKey.currentContext != null) {
-  //       if (error is sci.ServiceError ) {
-  //         print(error);
-  //         print(stackTrace);
-  //         ErrorScreen errorHandler = ErrorScreen(
-  //           errorDetails: FlutterErrorDetails(exception: error),
-  //         );
-  //
-  //         globals.States.hasError = true;
-  //         showDialog(
-  //             barrierDismissible: false,
-  //             context: navigatorKey.currentContext!,
-  //             builder: (context) => errorHandler.build(context));
-  //
-  //       }else{
-  //         print(error);
-  //         print(stackTrace);
-  //       }
-  //     } else {
-  //       print("Context or null check error");
-  //       print(stackTrace);
-  //       exit(1);
-  //     }
-  //   },
-  // );
+// ── Layout toggle via URL parameter ──────────────────────────────────────────
+// Add ?newLayout=true to the URL to use the new AppShell layout.
+// Default: old TwoColumnHome layout (production).
+bool get _useNewLayout {
+  final params = Uri.base.queryParameters;
+  return params['newLayout']?.toLowerCase() == 'true';
 }
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (_useNewLayout) {
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider(create: (_) => NavigationProvider()),
+        ],
+        child: Consumer<ThemeProvider>(
+          builder: (context, themeProvider, _) {
+            return MaterialApp(
+              title: 'Immunophenotyping',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.light,
+              darkTheme: AppTheme.dark,
+              themeMode: themeProvider.themeMode,
+              navigatorKey: navigatorKey,
+              home: const HomeScreen(),
+            );
+          },
+        ),
+      ),
+    );
+  } else {
+    runApp(MaterialApp(
+      home: const KumoAnalysisApp(),
+      navigatorKey: navigatorKey,
+    ));
+  }
+}
+
+// ── Legacy layout (default / production) ─────────────────────────────────────
 
 class KumoAnalysisApp extends StatelessWidget {
   const KumoAnalysisApp({super.key});
@@ -95,8 +94,6 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
   bool initStateFinished = false;
   @override
   initState() {
-    
-
     app = WebApp();
     appData = WebAppData(app);
 
@@ -105,24 +102,21 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       openDialog(context);
 
-      log("Initializing User Session",
-          dialogTitle: "WebApp");
+      log("Initializing User Session", dialogTitle: "WebApp");
 
       await app.init();
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
-      log("Initializing File Structure",
-          dialogTitle: "WebApp");
+      log("Initializing File Structure", dialogTitle: "WebApp");
 
       Styles().init([DefaultStyle()]);
-      
+
       var img = await rootBundle.load("assets/img/logo.png");
       var bData = img.buffer.asUint8List();
-      logo = Padding(padding: const EdgeInsets.fromLTRB(0, 0, 50, 20), child:   Image.memory(bData, width: 228,
-            height: 60));
+      logo = Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 50, 20),
+          child: Image.memory(bData, width: 228, height: 60));
 
-      // BASIC Initialization
-      // settingFilterFile
       await appData.init(app.projectId, app.projectName, app.username,
           reposJsonPath: "assets/repos.json",
           settingFilterFile: "assets/settings_screen_filter.json",
@@ -131,88 +125,37 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
       app.navMenu.project = app.projectName;
       app.navMenu.user = app.username;
       app.navMenu.team = app.teamname;
-      app.navMenu.webApp = "${packageInfo.appName.replaceAll("_", " ")} (${packageInfo.version})";
-
-      //OR Advanced initialization with configuration files
-      // await appData.init(app.projectId, app.projectName, app.username,
-      //     reposJsonPath: "assets/repos.json",
-      //     stepMapperJsonFile: "assets/workflow_steps.json",
-      //     settingFiles: workflowSettingsFiles);
-
-      // 
+      app.navMenu.webApp =
+          "${packageInfo.appName.replaceAll("_", " ")} (${packageInfo.version})";
 
       app.addNavigationPage(
           "Upload Data", UploadScreen(appData, key: app.getKey("Upload")));
-      
-      app.addNavigationPage(
-          "Configuration", SettingsScreen(appData, key: app.getKey("Configuration")));
+
+      app.addNavigationPage("Configuration",
+          SettingsScreen(appData, key: app.getKey("Configuration")));
 
       app.addNavigationPage(
           "Report", ReportScreen(appData, key: app.getKey("Report")));
 
       app.addNavigationSpace();
 
-      app.addNavigationPage(
-          "Task Manager", ImmunoTaskManagerScreen(appData, key: app.getKey("Task Manager")));
+      app.addNavigationPage("Task Manager",
+          ImmunoTaskManagerScreen(appData, key: app.getKey("Task Manager")));
 
       appData.addListener(refresh);
       app.navMenu.addListener(() => refresh());
 
-      // await app.postInit();
       app.isInitialized = true;
       initStateFinished = true;
       refresh();
-      
+
       closeLog();
     });
   }
 
-
   void refresh() {
     setState(() {});
   }
-
-
-  // Future<void> loadModel(WebAppData modelLayer) async {
-  //   if (app.projectId != "") {
-  //     var projectId = app.projectId;
-  //     var user = app.username;
-
-  //     var folder = await modelLayer.projectService
-  //         .getOrCreateFolder(projectId, user, ".tercen", parentId: "");
-
-  //     var viewFile = await modelLayer.projectService.getOrCreateFile(
-  //         projectId, user, "${user}_view_05",
-  //         parentId: folder.id);
-
-  //     print("FileContent");
-  //     var map = (getFileContent(viewFile) );
-  //     // print(map);
-  //     // print(map.runtimeType);
-  //     // ViewState
-  //     // ViewState.fromJson( map as Map<String, List<String>> ); 
-      
-  //   }
-  // }
-
-
-  // dynamic getFileContent(sci.FileDocument fileDoc) {
-
-  //   if (fileDoc.metadata.contentType == "application/json") {
-  //     print("A");
-  //     print(fileDoc.toJson());
-  //     print(fileDoc.getMeta("file.content")!);
-  //     print(fileDoc.getMeta("file.content")!.runtimeType);
-  //     print("..............");
-  //     return  jsonDecode(fileDoc.getMeta("file.content")!);
-  //   } else {
-  //     print("B");
-  //     print(fileDoc.getMeta("file.content")!);
-  //     print(fileDoc.getMeta("file.content")!.runtimeType);
-  //     print("..............");
-  //     return fileDoc.getMeta("file.content")!;
-  //   }
-  // }
 
   Widget _buildBanner() {
     return Column(
@@ -221,14 +164,6 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
           alignment: Alignment.topLeft,
           child: logo,
         ),
-        // Align(
-        //     alignment: Alignment.topLeft,
-        //     child: Text(
-        //       appData.project.label != ""
-        //           ? "Project Name: ${appData.project.label}"
-        //           : "No project associated",
-        //       style: Styles()["textGray"],
-        //     )),
         Container(
           height: 1,
           color: const Color.fromARGB(255, 230, 230, 230),
@@ -249,6 +184,8 @@ class _TwoColumnHomeState extends State<TwoColumnHome> with ProgressDialog {
     }
   }
 }
+
+// ── Error screen ─────────────────────────────────────────────────────────────
 
 class ErrorScreen extends StatelessWidget {
   static const String missingTemplate = "ERR_MISSING_TEMPLATE";
@@ -281,7 +218,7 @@ class ErrorScreen extends StatelessWidget {
         color: Colors.red,
       ),
       backgroundColor: const Color.fromARGB(255, 247, 194, 194),
-      title:  Text(
+      title: Text(
         "An Unexpected Error Occurred",
         style: Styles()["textH2"],
       ),
@@ -294,8 +231,8 @@ class ErrorScreen extends StatelessWidget {
       actions: [
         TextButton(
             style: const ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll<Color>(
-                  Color.fromARGB(255, 20, 20, 20)),
+              backgroundColor:
+                  WidgetStatePropertyAll<Color>(Color.fromARGB(255, 20, 20, 20)),
             ),
             onPressed: () {
               print("Loaded project is ${globals.States.loadedProject}");

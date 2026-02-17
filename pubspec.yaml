@@ -77,6 +77,33 @@ dependencies:
 
 
 
+dependency_overrides:
+  webapp_utils:
+    git:
+      ref: 0.1.1
+      url: git@github.com:tercen/webapp_lib
+      path: webapp_utils
+  webapp_ui_commons:
+    git:
+      ref: 0.1.1
+      url: git@github.com:tercen/webapp_lib
+      path: webapp_ui_commons
+  webapp_model:
+    git:
+      ref: 0.1.1
+      url: git@github.com:tercen/webapp_lib
+      path: webapp_model
+  webapp_components:
+    git:
+      ref: 0.1.1
+      url: git@github.com:tercen/webapp_lib
+      path: webapp_components
+  webapp_workflow:
+    git:
+      ref: 0.1.1
+      url: git@github.com:tercen/webapp_lib
+      path: webapp_workflow
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
