@@ -1,0 +1,40 @@
+{
+ 
+    "settings":[
+        {
+            "section": "Clustering",
+            "mode":"default",
+            "step_name": "Phenograph",
+            "step_id": "5821188f-ea58-4380-9e1d-1ed2a327fff6",
+            "setting_name":"implementation",
+            "hint": "",
+            "type": "ListSingle",
+            "value": "Rphenograph",
+            "options": [
+                "FastPG",
+                "Rphenograph"
+            ]
+        },
+        {
+            "section": "UMAP",
+            "mode": "default",
+            "step_name": "UMAP",
+            "step_id": "ec2c9500-28bd-40ed-9749-fa4e1519fcbb",
+            "setting_name":"n_neighbors",
+            "hint": "The number of neighbors considered in UMAP",
+            "type": "int",
+            "value": "15"
+        },
+        
+        {
+            "section": "UMAP",
+            "mode": "default",
+            "step_name": "UMAP",
+            "step_id": "ec2c9500-28bd-40ed-9749-fa4e1519fcbb",
+            "setting_name":"min_dist",
+            "hint": "The minimum distance between points in the UMAP embedding",
+            "type": "double",
+            "value": "0.5"
+        }
+    ]
+}

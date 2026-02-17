@@ -1,0 +1,17 @@
+{
+    "channels":[
+        ".ci",
+        "SSC-A",
+        "SSC-B-A",
+        "SSC-B-H",
+        "SSC-H",
+        "Time",
+        "LIVE DEAD Blue-A",
+        "Width",
+        "Cener",
+        "Height",
+        "Area",
+        "FSC-H",
+        "FSC-A"
+    ]
+}
